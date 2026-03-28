@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - HomeBridge{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Login -->
+<div class="hero-section fade-in-up">
+    <div class="row align-items-center">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <h1>Care starts<br>at home</h1>
+            <p class="hero-tagline">
+                HomeBridge connects vulnerable individuals with trusted local volunteers 
+                for household cleaning and domestic support. Free, safe, and community-driven.
+            </p>
+            <div class="hero-features">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div class="feature-text">
+                        <strong>Local Matching</strong>
+                        Matched with nearby volunteers based on your postcode and needs
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <div class="feature-text">
+                        <strong>Safe &amp; Verified</strong>
+                        All volunteers are verified with DBS checks and admin approval
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-heart-fill"></i></div>
+                    <div class="feature-text">
+                        <strong>Community Care</strong>
+                        100% volunteer-based, no fees, just neighbours helping neighbours
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 offset-lg-1">
+            {% if current_user.is_authenticated %}
+            <div class="card shadow-lg" style="border-radius: 16px; border: none;">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-3"><i class="bi bi-person-check-fill" style="font-size: 3rem; color: var(--hb-teal);"></i></div>
+                    <h4 class="display-heading mb-2" style="font-size: 1.4rem;">Hello, {{ current_user.name }}!</h4>
+                    <p class="text-muted mb-3">You are already signed in.</p>
+                    {% if current_user.user_type == 'admin' %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-grid-1x2-fill"></i> Go to Dashboard
+                        </a>
+                    {% elif current_user.user_type == 'volunteer' %}
+                        <a href="{{ url_for('volunteer_dashboard') }}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-house-heart-fill"></i> Go to My Space
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-house-heart-fill"></i> Go to My Space
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-lg" style="border-radius: 16px; border: none;">
+                <div class="card-body p-4">
+                    <h4 class="display-heading mb-1" style="font-size: 1.4rem;"><i class="bi bi-box-arrow-in-right" style="color: var(--hb-teal);"></i> Welcome back</h4>
+                    <p class="text-muted mb-3" style="font-size: 0.9rem;">Sign in to your HomeBridge account</p>
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: 500; font-size: 0.9rem;">I am a:</label>
+                            <select class="form-select" name="user_type" required>
+                                <option value="user">Service User</option>
+                                <option value="volunteer">Volunteer</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: 500; font-size: 0.9rem;">Email Address</label>
+                            <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: 500; font-size: 0.9rem;">Password</label>
+                            <input type="password" class="form-control" name="password" required placeholder="••••••••">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </form>
+
+                    <hr style="margin: 1.25rem 0;">
+                    <p class="text-center mb-0" style="font-size: 0.9rem;">
+                        New here? <a href="{{ url_for('register') }}" style="font-weight: 600;">Create an account</a>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="how-it-works fade-in-up-d2">
+    <h3>How It Works</h3>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="step-card">
+                <div class="step-number" style="background: linear-gradient(135deg, #2ABFAB, #5A8BDA);">1</div>
+                <h5>Register</h5>
+                <p>Create a free account as a service user or volunteer</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="step-card">
+                <div class="step-number" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA);">2</div>
+                <h5>Request Help</h5>
+                <p>Select the household support you need and your preferred date</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="step-card">
+                <div class="step-number" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4);">3</div>
+                <h5>Get Matched</h5>
+                <p>Our smart algorithm finds the best-suited volunteers near you</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="step-card">
+                <div class="step-number" style="background: linear-gradient(135deg, #E8709A, #A864C6);">4</div>
+                <h5>Receive Help</h5>
+                <p>Your matched volunteer visits and helps with your household needs</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

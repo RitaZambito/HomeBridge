@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}All Users - HomeBridge Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-people-fill text-primary"></i> All Service Users</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+{% if users %}
+    <!-- Search Bar -->
+    <div class="mb-3 d-flex gap-3">
+        <div class="input-group" style="max-width: 250px;">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" id="userFirstName" class="form-control" placeholder="First name..." onkeyup="filterUsers()">
+        </div>
+        <div class="input-group" style="max-width: 250px;">
+            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+            <input type="text" id="userSurname" class="form-control" placeholder="Surname..." onkeyup="filterUsers()">
+        </div>
+        <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input type="text" id="userEmail" class="form-control" placeholder="Email..." onkeyup="filterUsers()">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover text-center align-middle" style="white-space: nowrap;" id="usersTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Postcode</th>
+                            <th>Conditions</th>
+                            <th>Registered</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone or '-' }}</td>
+                            <td>{{ user.postcode }}</td>
+                            <td class="text-start">{{ user.conditions or '-' }}</td>
+                            <td>{{ user.registered_date.strftime('%d %b %Y') }}</td>
+                            <td>
+                                {% if user.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Suspended</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a href="{{ url_for('admin_chat', participant_type='user', participant_id=user.id) }}" class="btn btn-sm btn-outline-primary" style="width: 100px;" title="Message {{ user.name }}">
+                                        <i class="bi bi-chat-dots"></i> Message
+                                    </a>
+                                    <form method="POST" action="{{ url_for('admin_suspend_user', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        {% if user.status == 'active' %}
+                                            <button type="submit" class="btn btn-sm btn-warning" style="width: 100px;" title="Suspend account">
+                                                <i class="bi bi-pause-circle"></i> Suspend
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-success" style="width: 100px;" title="Reactivate account">
+                                                <i class="bi bi-play-circle"></i> Reactivate
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                    <form method="POST" action="{{ url_for('admin_delete_user', user_id=user.id) }}" style="display: inline;"
+                                          onsubmit="return confirm('Are you sure you want to PERMANENTLY delete user {{ user.name }}? This action cannot be undone. Consider suspending instead.');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-danger" style="width: 100px;" title="Permanently delete">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No service users registered yet.
+    </div>
+{% endif %}
+
+<script>
+function filterUsers() {
+    var firstName = document.getElementById('userFirstName').value.toLowerCase();
+    var surname = document.getElementById('userSurname').value.toLowerCase();
+    var email = document.getElementById('userEmail').value.toLowerCase();
+    var rows = document.querySelectorAll('#usersTable tbody tr');
+    rows.forEach(function(row) {
+        var fullName = row.cells[1].textContent.trim();
+        var parts = fullName.split(' ');
+        var fName = parts[0].toLowerCase();
+        var sName = parts.slice(1).join(' ').toLowerCase();
+        var rowEmail = row.cells[2].textContent.toLowerCase();
+        var matchFirst = !firstName || fName.startsWith(firstName);
+        var matchSurname = !surname || sName.startsWith(surname);
+        var matchEmail = !email || rowEmail.startsWith(email);
+        row.style.display = (matchFirst && matchSurname && matchEmail) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}My Space - HomeBridge{% endblock %}
+
+{% block content %}
+    <!-- Volunteer Space -->
+    <div class="welcome-banner fade-in-up">
+        <h2><i class="bi bi-heart-fill" style="color: var(--hb-pink-accent); font-size: 1.5rem;"></i> Welcome back, {{ current_user.name }}!</h2>
+        <p class="welcome-sub mb-0">Thank you for volunteering. Your help makes a real difference.</p>
+    </div>
+
+    {% set awaiting = my_requests|selectattr('status', 'equalto', 'awaiting')|list %}
+    {% set in_progress = my_requests|selectattr('status', 'equalto', 'in_progress')|list %}
+    {% set completed = my_requests|selectattr('status', 'equalto', 'completed')|sort(attribute='completed_date', reverse=true)|list %}
+    {% set cancelled = my_requests|selectattr('status', 'equalto', 'cancelled')|sort(attribute='cancelled_date', reverse=true)|list %}
+
+    <!-- Clickable Stat Cards -->
+    <div class="row g-3 mb-3 fade-in-up-d1 justify-content-center" style="max-width: 900px; margin: 0 auto;">
+        <div class="col-6 col-md-3">
+            <div class="stat-card stat-awaiting tab-card" tabindex="0" role="button" style="padding: 1rem;" data-target="awaiting-pane">
+                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-number">{{ awaiting|length }}</div>
+                <div class="stat-label">Awaiting Acceptance</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card stat-progress tab-card" tabindex="0" role="button" style="padding: 1rem;" data-target="progress-pane">
+                <div class="stat-icon"><i class="bi bi-clock-fill"></i></div>
+                <div class="stat-number">{{ in_progress|length }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card stat-completed tab-card" tabindex="0" role="button" style="padding: 1rem;" data-target="completed-pane">
+                <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-number">{{ completed|length }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card stat-cancelled tab-card" tabindex="0" role="button" style="padding: 1rem;" data-target="cancelled-pane">
+                <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+                <div class="stat-number">{{ cancelled|length }}</div>
+                <div class="stat-label">Cancelled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Panes (all hidden by default) -->
+
+    <div class="tab-pane-custom" id="awaiting-pane" style="display: none;">
+        {% if awaiting %}
+            {% for request in awaiting %}
+            {% set is_expired = request.preferred_date and request.preferred_date <= today %}
+            <div class="card mb-3 {% if is_expired %}border-secondary opacity-50{% else %}border-info{% endif %}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                {% if is_expired %}
+                                <span class="badge bg-secondary"><i class="bi bi-clock-history"></i> Expired</span>
+                                {% else %}
+                                <span class="badge bg-info"><i class="bi bi-bell"></i> Awaiting Your Acceptance</span>
+                                {% endif %}
+                                {{ request.support_type }}
+                            </h5>
+                            {% if is_expired %}
+                            <div class="alert alert-secondary py-2 mb-2">
+                                <i class="bi bi-exclamation-triangle"></i> This request has expired — the requested date has passed.
+                            </div>
+                            {% endif %}
+                            <p class="mb-2"><i class="bi bi-person-fill"></i> <strong>Requested by:</strong> {{ request.user.name if request.user else 'Unknown' }}</p>
+                            <p class="card-text"><i class="bi bi-file-text"></i> {{ request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text"><small class="text-muted">
+                                <i class="bi bi-exclamation-triangle"></i> Urgency: 
+                                <span class="{% if request.urgency == 'High' %}text-danger fw-bold{% elif request.urgency == 'Medium' %}text-warning fw-bold{% else %}text-success{% endif %}">{{ request.urgency }}</span> |
+                                <i class="bi bi-calendar"></i> Date: {{ request.preferred_date|format_date }}{% if request.time_slot %} <span class="badge bg-light text-dark">{{ request.time_slot }}</span>{% endif %} |
+                                <i class="bi bi-clock-history"></i> Created: {{ request.created_date.strftime('%d %b %Y') }}
+                            </small></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% if not is_expired %}
+                            <a href="{{ url_for('accept_request', request_id=request.id) }}" class="btn btn-success mb-2">
+                                <i class="bi bi-check-lg"></i> Accept
+                            </a>
+                            <form method="POST" action="{{ url_for('cancel_request', request_id=request.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Decline this request?')">
+                                    <i class="bi bi-x-lg"></i> Decline
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">No requests awaiting your acceptance</h5>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="tab-pane-custom" id="progress-pane" style="display: none;">
+        {% if in_progress %}
+            {% for request in in_progress %}
+            <div class="card mb-3 border-warning">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> In Progress</span>
+                                {{ request.support_type }}
+                            </h5>
+                            <p class="mb-2"><i class="bi bi-person-fill"></i> <strong>Requested by:</strong> {{ request.user.name if request.user else 'Unknown' }}</p>
+                            <p class="card-text"><i class="bi bi-file-text"></i> {{ request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text"><small class="text-muted">
+                                <i class="bi bi-exclamation-triangle"></i> Urgency: 
+                                <span class="{% if request.urgency == 'High' %}text-danger fw-bold{% elif request.urgency == 'Medium' %}text-warning fw-bold{% else %}text-success{% endif %}">{{ request.urgency }}</span> |
+                                <i class="bi bi-calendar"></i> Date: {{ request.preferred_date|format_date }}{% if request.time_slot %} <span class="badge bg-light text-dark">{{ request.time_slot }}</span>{% endif %} |
+                                <i class="bi bi-clock-history"></i> Created: {{ request.created_date.strftime('%d %b %Y') }}
+                            </small></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            {% set booking_date = request.preferred_date %}
+                            {% set can_complete = booking_date <= today %}
+                            
+                            {% if can_complete %}
+                            <a href="{{ url_for('complete_request', request_id=request.id) }}" class="btn btn-primary mb-2">
+                                <i class="bi bi-flag-fill"></i> Mark Complete
+                            </a>
+                            {% else %}
+                            <button class="btn btn-secondary mb-2" disabled>
+                                <i class="bi bi-flag-fill"></i> Mark Complete
+                            </button>
+                            {% endif %}
+                            
+                            {% if not can_complete and request.can_volunteer_cancel %}
+                            <form method="POST" action="{{ url_for('cancel_request', request_id=request.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                    <i class="bi bi-x-lg"></i> Cancel
+                                </button>
+                            </form>
+                            {% elif not can_complete and not request.can_volunteer_cancel %}
+                            {% if request.id in pending_cancel_ids %}
+                            <br><small class="text-warning"><i class="bi bi-hourglass-split"></i> <strong>Awaiting Cancellation</strong></small>
+                            {% else %}
+                            <br><small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Less than 48h - <a href="{{ url_for('support_chat') }}?subject=Request Cancellation&request_id={{ request.id }}" class="text-danger fw-bold">contact Admin to cancel</a></small>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-clock text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">No requests in progress</h5>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="tab-pane-custom" id="completed-pane" style="display: none;">
+        {% if completed %}
+            <div class="text-end mb-3">
+                <form method="POST" action="{{ url_for('clear_completed') }}" class="d-inline"
+                      onsubmit="return confirm('Remove all completed requests? This cannot be undone.')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-trash"></i> Remove All
+                    </button>
+                </form>
+            </div>
+            {% for request in completed %}
+            <div class="card mb-3 border-success">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Completed</span>
+                                {{ request.support_type }}
+                            </h5>
+                            <p class="mb-2"><i class="bi bi-person-fill"></i> <strong>Requested by:</strong> {{ request.user.name if request.user else 'Unknown' }}</p>
+                            <p class="card-text"><i class="bi bi-file-text"></i> {{ request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text"><small class="text-muted">
+                                <i class="bi bi-calendar"></i> Date: {{ request.preferred_date|format_date }}{% if request.time_slot %} <span class="badge bg-light text-dark">{{ request.time_slot }}</span>{% endif %} |
+                                <i class="bi bi-clock-history"></i> Completed: {{ request.completed_date.strftime('%d %b %Y') if request.completed_date else 'N/A' }}
+                            </small></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="text-success d-block mb-2">
+                                <i class="bi bi-check-circle-fill" style="font-size: 1.5rem;"></i> Done!
+                            </span>
+                            <form method="POST" action="{{ url_for('hide_completed', request_id=request.id) }}" class="d-inline"
+                                  onsubmit="return confirm('Remove this completed request?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-eye-slash"></i> Remove
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-trophy text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">No completed requests yet</h5>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="tab-pane-custom" id="cancelled-pane" style="display: none;">
+        {% if cancelled %}
+            <div class="text-end mb-3">
+                <form method="POST" action="{{ url_for('clear_cancelled') }}" class="d-inline"
+                      onsubmit="return confirm('Remove all cancelled requests? This cannot be undone.')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash"></i> Remove All
+                    </button>
+                </form>
+            </div>
+            {% for request in cancelled %}
+            <div class="card mb-3 border-danger">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Cancelled{% if request.cancelled_by_name %} by {{ request.cancelled_by_name }}{% endif %}</span>
+                                {{ request.support_type }}
+                            </h5>
+                            <p class="mb-2"><i class="bi bi-person-fill"></i> <strong>Requested by:</strong> {{ request.user.name if request.user else 'Unknown' }}</p>
+                            <p class="card-text"><i class="bi bi-file-text"></i> {{ request.description[:100] }}{% if request.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text"><small class="text-muted">
+                                <i class="bi bi-calendar"></i> Date: {{ request.preferred_date|format_date }}{% if request.time_slot %} <span class="badge bg-light text-dark">{{ request.time_slot }}</span>{% endif %} |
+                                <i class="bi bi-clock-history"></i> Created: {{ request.created_date.strftime('%d %b %Y') }}
+                            </small></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <form method="POST" action="{{ url_for('cancel_request', request_id=request.id) }}" class="d-inline"
+                                  onsubmit="return confirm('Remove this cancelled request?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-eye-slash"></i> Remove
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-check-lg text-muted" style="font-size: 3rem;"></i>
+                <h5 class="text-muted mt-3">No cancelled requests</h5>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-3 mt-4 fade-in-up-d3 justify-content-center" style="max-width: 900px; margin: 0 auto;">
+        <div class="col-md-4 d-flex">
+            <div class="vol-quick-card h-100 w-100">
+                <div class="card-body text-center d-flex flex-column p-4">
+                    <div class="mb-2"><i class="bi bi-person-circle" style="font-size: 2rem; color: var(--hb-violet);"></i></div>
+                    <h5 class="display-heading" style="font-size: 1.1rem;">My Profile</h5>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('volunteer_profile') }}" class="btn btn-primary" style="width: 130px; text-align: center; font-size: 0.82rem;">
+                            <i class="bi bi-eye"></i> View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 d-flex">
+            <div class="vol-quick-card h-100 w-100">
+                <div class="card-body text-center d-flex flex-column p-4">
+                    <div class="mb-2">
+                        <i class="bi bi-chat-dots-fill" style="font-size: 2rem; color: var(--hb-violet);"></i>
+                        {% if unread_replies and unread_replies > 0 %}
+                            <span class="badge bg-danger ms-1" style="vertical-align: top;">{{ unread_replies }} new</span>
+                        {% endif %}
+                    </div>
+                    <h5 class="display-heading" style="font-size: 1.1rem;">Support Chat</h5>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('support_chat') }}" class="btn btn-primary" style="width: 130px; text-align: center; font-size: 0.82rem;">
+                            <i class="bi bi-chat-dots"></i> Open Chat
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 d-flex">
+            <div class="vol-quick-card h-100 w-100">
+                <div class="card-body text-center d-flex flex-column p-4">
+                    <div class="mb-2"><i class="bi bi-star-fill" style="font-size: 2rem; color: #F0AD4E;"></i></div>
+                    <h5 class="display-heading" style="font-size: 1.1rem;">My Reviews</h5>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('volunteer_reviews') }}" class="btn btn-primary" style="width: 130px; text-align: center; font-size: 0.82rem;">
+                            <i class="bi bi-chat-quote"></i> View Reviews
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.querySelectorAll('.tab-card').forEach(card => {
+    card.addEventListener('click', function() {
+        const target = this.dataset.target;
+        // Hide all panes
+        document.querySelectorAll('.tab-pane-custom').forEach(p => p.style.display = 'none');
+        // Remove active from all stat cards
+        document.querySelectorAll('.tab-card').forEach(c => {
+            c.classList.remove('active-stat');
+        });
+        // Show target pane
+        document.getElementById(target).style.display = 'block';
+        // Highlight active card
+        this.classList.add('active-stat');
+    });
+    card.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+    });
+});
+
+// Auto-open tab from URL parameter
+const urlTab = new URLSearchParams(window.location.search).get('tab');
+if (urlTab) {
+    const card = document.querySelector(`.tab-card[data-target="${urlTab}-pane"]`);
+    if (card) card.click();
+}
+</script>
+{% endblock %}

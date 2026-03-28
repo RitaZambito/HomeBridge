@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Admin - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                    <h4 class="mb-0"><i class="bi bi-envelope"></i> Contact Administrator</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Have a question, issue, or feedback? Send us a message and we'll get back to you as soon as possible.
+                    </p>
+                    
+                    <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if prefill_request_id %}
+                        <input type="hidden" name="linked_request_id" value="{{ prefill_request_id }}">
+                        {% endif %}
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">
+                                <i class="bi bi-chat-left-text"></i> Subject
+                            </label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Select a subject...</option>
+                                <option value="Technical Issue" {% if prefill_subject == 'Technical Issue' %}selected{% endif %}>🔧 Technical Issue</option>
+                                <option value="Request Cancellation" {% if prefill_subject == 'Request Cancellation' %}selected{% endif %}>❌ Request Cancellation</option>
+                                <option value="Volunteer Issue" {% if prefill_subject == 'Volunteer Issue' %}selected{% endif %}>🙋 Volunteer Issue</option>
+                                <option value="Account Help" {% if prefill_subject == 'Account Help' %}selected{% endif %}>👤 Account Help</option>
+                                <option value="Safeguarding Concern" {% if prefill_subject == 'Safeguarding Concern' %}selected{% endif %}>🛡️ Safeguarding Concern</option>
+                                <option value="Feedback" {% if prefill_subject == 'Feedback' %}selected{% endif %}>💬 Feedback</option>
+                                <option value="Other" {% if prefill_subject == 'Other' %}selected{% endif %}>📝 Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">
+                                <i class="bi bi-pencil"></i> Your Message
+                            </label>
+                            <textarea class="form-control" id="message" name="message" rows="6" 
+                                      placeholder="Please describe your issue or question in detail..." required>{{ prefill_message }}</textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-send"></i> Send Message
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" disabled title="File attachments coming soon">
+                                    <i class="bi bi-paperclip"></i> Attach File
+                                </button>
+                            </div>
+                            <a href="javascript:history.back()" class="btn btn-outline-secondary mt-2">
+                                <i class="bi bi-arrow-left"></i> Go Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Tips -->
+            <div class="card mt-4 border-info">
+                <div class="card-body">
+                    <h6><i class="bi bi-lightbulb text-warning"></i> Tips for a faster response:</h6>
+                    <ul class="mb-0 small text-muted">
+                        <li>Be specific about your issue</li>
+                        <li>Include any relevant request IDs if applicable</li>
+                        <li>Describe what you expected to happen vs what actually happened</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

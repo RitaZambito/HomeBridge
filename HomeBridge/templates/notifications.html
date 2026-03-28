@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-bell-fill text-warning"></i> Notifications</h2>
+            <hr>
+        </div>
+    </div>
+
+    {% if notifications %}
+        <div class="text-end mb-3">
+            <form method="POST" action="{{ url_for('clear_notifications') }}" class="d-inline"
+                  onsubmit="return confirm('Clear all notifications? This cannot be undone.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i> Clear All
+                </button>
+            </form>
+        </div>
+        {% for notif in notifications %}
+            <div class="card mb-2">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-start">
+                        <div class="me-3">
+                            {% if 'Accepted' in notif.title %}
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.4rem;"></i>
+                            {% elif 'Declined' in notif.title or 'Cancelled' in notif.title %}
+                                <i class="bi bi-x-circle-fill text-danger" style="font-size: 1.4rem;"></i>
+                            {% elif 'Completed' in notif.title %}
+                                <i class="bi bi-trophy-fill text-success" style="font-size: 1.4rem;"></i>
+                            {% elif 'Assigned' in notif.title %}
+                                <i class="bi bi-bell-fill text-info" style="font-size: 1.4rem;"></i>
+                            {% elif 'Replied' in notif.title or 'Message' in notif.title %}
+                                <i class="bi bi-envelope-fill text-primary" style="font-size: 1.4rem;"></i>
+                            {% elif 'Registered' in notif.title %}
+                                <i class="bi bi-person-plus-fill text-success" style="font-size: 1.4rem;"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill text-secondary" style="font-size: 1.4rem;"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong>{{ notif.title }}</strong>
+                            <p class="mb-1 text-muted">{{ notif.message }}</p>
+                            {% set link_valid = notif.link and (not notif.link_expires or notif.link_expires > today) %}
+                            <!-- DEBUG: expires={{ notif.link_expires }}, today={{ today }}, valid={{ link_valid }} -->
+                            {% if link_valid %}
+                                {% if 'create-request' in (notif.link or '') %}
+                                    <a href="{{ notif.link }}" class="badge bg-primary text-decoration-none"><i class="bi bi-arrow-right-circle"></i> Find a new volunteer</a>
+                                {% elif 'Cancellation Request' in notif.title %}
+                                    <a href="{{ notif.link }}" class="badge bg-danger text-decoration-none"><i class="bi bi-exclamation-triangle"></i> View & Cancel Request</a>
+                                {% elif 'message' in notif.title|lower and '/chat' in (notif.link or '') %}
+                                    <a href="{{ notif.link }}" class="badge bg-primary text-decoration-none"><i class="bi bi-chat-dots"></i> Open Chat</a>
+                                {% elif 'message' in notif.title|lower and '/support-chat' in (notif.link or '') %}
+                                    <a href="{{ notif.link }}" class="badge bg-primary text-decoration-none"><i class="bi bi-chat-dots"></i> Open Chat</a>
+                                {% elif 'Completed' in notif.title %}
+                                    <a href="{{ notif.link }}" class="badge bg-success text-decoration-none"><i class="bi bi-star"></i> Leave Feedback</a>
+                                {% elif 'Accepted' in notif.title %}
+                                    <a href="{{ notif.link }}" class="badge bg-success text-decoration-none"><i class="bi bi-eye"></i> View Request</a>
+                                {% elif 'Assigned' in notif.title %}
+                                    <a href="{{ notif.link }}" class="badge bg-info text-decoration-none"><i class="bi bi-eye"></i> View Request</a>
+                                {% else %}
+                                    <a href="{{ notif.link }}" class="badge bg-primary text-decoration-none"><i class="bi bi-eye"></i> View</a>
+                                {% endif %}
+                            {% elif notif.link_expires and notif.link_expires <= today %}
+                                <span class="badge bg-secondary"><i class="bi bi-clock-history"></i> Link Expired</span>
+                            {% endif %}
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> {{ notif.created_date.strftime('%d %b %Y at %H:%M') }}
+                            </small>
+                        </div>
+                        <div class="ms-2">
+                            <form method="POST" action="{{ url_for('delete_notification', notif_id=notif.id) }}" class="d-inline"
+                                  onsubmit="return confirm('Delete this notification?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm" title="Delete">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-bell-slash text-muted" style="font-size: 4rem;"></i>
+            <h5 class="text-muted mt-3">No notifications yet</h5>
+            <p class="text-muted">You'll be notified when something happens with your requests or messages.</p>
+        </div>
+    {% endif %}
+
+    <div class="text-center mt-3">
+        {% if current_user.user_type == 'volunteer' %}
+            <a href="{{ url_for('volunteer_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to My Space
+            </a>
+        {% elif current_user.user_type == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        {% else %}
+            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to My Space
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

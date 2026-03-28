@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit My Profile - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                    <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Edit My Profile</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('user_edit_profile') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="bi bi-person"></i> Full Name</label>
+                                <input type="text" class="form-control" name="name" value="{{ user.name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="bi bi-telephone"></i> Phone Number</label>
+                                <input type="tel" class="form-control" name="phone" value="{{ user.phone or '' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label"><i class="bi bi-telephone-forward"></i> Emergency Contact</label>
+                                <input type="tel" class="form-control" name="emergency_contact" 
+                                       value="{{ user.emergency_contact or '' }}" 
+                                       placeholder="Emergency contact phone number">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-house"></i> Address</label>
+                            <input type="text" class="form-control" name="address" value="{{ user.address or '' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-geo-alt"></i> Postcode</label>
+                            <input type="text" class="form-control" name="postcode" value="{{ user.postcode or '' }}" required 
+                                   placeholder="e.g., B15 2TT">
+                            <small class="text-muted">If you change your postcode, your location will be updated automatically for volunteer matching.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-clipboard-heart"></i> Support Needs <small class="text-muted">(tick all that apply)</small></label>
+                            {% set current_needs = (user.conditions or '').split(', ') %}
+                            <div class="border rounded p-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Physical disability" id="sn1" {% if 'Physical disability' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn1">Physical disability</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Limited mobility" id="sn2" {% if 'Limited mobility' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn2">Limited mobility</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Visual impairment" id="sn3" {% if 'Visual impairment' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn3">Visual impairment</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Mental health condition" id="sn4" {% if 'Mental health condition' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn4">Mental health condition</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Hoarding disorder" id="sn5" {% if 'Hoarding disorder' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn5">Hoarding disorder</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Learning disability" id="sn6" {% if 'Learning disability' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn6">Learning disability</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Dementia / cognitive decline" id="sn7" {% if 'Dementia / cognitive decline' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn7">Dementia / cognitive decline</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Chronic illness / chronic pain" id="sn8" {% if 'Chronic illness / chronic pain' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn8">Chronic illness / chronic pain</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Elderly, living alone" id="sn9" {% if 'Elderly, living alone' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn9">Elderly, living alone</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Carer / caregiver burden" id="sn10" {% if 'Carer / caregiver burden' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn10">Carer / caregiver burden</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Recovering from surgery or illness" id="sn11" {% if 'Recovering from surgery or illness' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn11">Recovering from surgery or illness</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Bereavement" id="sn12" {% if 'Bereavement' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn12">Bereavement</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Financial hardship / low income" id="sn13" {% if 'Financial hardship / low income' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn13">Financial hardship / low income</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Other" id="sn14" {% if 'Other' in current_needs %}checked{% endif %}>
+                                    <label class="form-check-label" for="sn14">Other</label>
+                                </div>
+                            </div>
+                            <small class="text-muted"><i class="bi bi-shield-lock"></i> Only visible to administrators.</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to My Space
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

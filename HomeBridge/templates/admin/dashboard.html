@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - HomeBridge{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-shield-fill-check"></i> Administrator Dashboard</h2>
+<p class="lead">Welcome, {{ current_user.name }}!</p>
+
+<!-- Statistics Cards - Row 1 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_users') }}" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #2ABFAB, #7C5CBF);">
+                <div class="card-body">
+                    <h5><i class="bi bi-people-fill"></i> Total Users</h5>
+                    <h2>{{ stats.total_users }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_volunteers') }}" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA);">
+                <div class="card-body">
+                    <h5><i class="bi bi-heart-fill"></i> Total Volunteers</h5>
+                    <h2>{{ stats.total_volunteers }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_requests') }}" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4);">
+                <div class="card-body">
+                    <h5><i class="bi bi-clipboard-check"></i> Total Requests</h5>
+                    <h2>{{ stats.total_requests }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_requests') }}?filter=cancelled" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #E8709A, #A864C6);">
+                <div class="card-body">
+                    <h5><i class="bi bi-x-circle"></i> Cancelled</h5>
+                    <h2>{{ stats.cancelled }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards - Row 2 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_requests') }}?filter=in_progress" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #F0AD4E, #E88B6A);">
+                <div class="card-body">
+                    <h5><i class="bi bi-arrow-repeat"></i> In Progress</h5>
+                    <h2>{{ stats.in_progress }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_requests') }}?filter=completed" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #2ABFAB, #5A8BDA);">
+                <div class="card-body">
+                    <h5><i class="bi bi-check-circle-fill"></i> Completed</h5>
+                    <h2>{{ stats.completed }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('admin_conversations') }}" class="text-decoration-none">
+            <div class="card text-white h-100 card-hover" style="background: linear-gradient(135deg, #8A6BC6, #5A8BDA);">
+                <div class="card-body">
+                    <h5><i class="bi bi-chat-dots-fill"></i> Messages</h5>
+                    <h2>{{ stats.unread_messages }}</h2>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white h-100" style="background: linear-gradient(135deg, #2E2560, #4A3D8F);">
+            <div class="card-body">
+                <h5><i class="bi bi-graph-up"></i> Success Rate</h5>
+                <h2>{{ stats.success_rate }}%</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<h4>Recent Activity</h4>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_requests %}
+                    <div class="table-responsive">
+                        <table class="table table-sm text-center align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in recent_requests[:5] %}
+                                <tr>
+                                    <td>#{{ req.id }}</td>
+                                    <td>{{ req.support_type }}</td>
+                                    <td>
+                                        <span class="badge
+                                            {% if req.status == 'pending' %}bg-warning
+                                            {% elif req.status == 'awaiting' %}bg-info
+                                            {% elif req.status == 'in_progress' %}bg-primary
+                                            {% elif req.status == 'completed' %}bg-success
+                                            {% elif req.status == 'cancelled' %}bg-danger
+                                            {% endif %}">
+                                            {% if req.status == 'in_progress' %}In Progress
+                                            {% elif req.status == 'awaiting' %}Awaiting
+                                            {% elif req.status == 'completed' %}Completed
+                                            {% elif req.status == 'cancelled' %}Cancelled
+                                            {% elif req.status == 'pending' %}Pending
+                                            {% else %}{{ req.status }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>{{ req.created_date.strftime('%d %b') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No requests yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #2ABFAB, #5A8BDA); border-radius: 8px 8px 0 0;">
+                <h5 class="mb-0"><i class="bi bi-person-plus-fill"></i> Recent Registrations</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users or recent_volunteers %}
+                    <ul class="list-group list-group-flush">
+                        {% for user in recent_users[:3] %}
+                        <li class="list-group-item">
+                            <i class="bi bi-person-fill text-primary"></i>
+                            <strong>{{ user.name }}</strong> (Service User)
+                            <br><small class="text-muted">{{ user.registered_date.strftime('%d %b %Y') }}</small>
+                        </li>
+                        {% endfor %}
+                        {% for vol in recent_volunteers[:3] %}
+                        <li class="list-group-item">
+                            <i class="bi bi-heart-fill text-success"></i>
+                            <strong>{{ vol.name }}</strong> (Volunteer)
+                            <br><small class="text-muted">{{ vol.registered_date.strftime('%d %b %Y') }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No recent registrations</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-hover:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        transition: all 0.2s;
+    }
+</style>
+{% endblock %}

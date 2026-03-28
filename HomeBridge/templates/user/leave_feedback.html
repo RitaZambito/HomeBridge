@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Feedback - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #2ABFAB, #5A8BDA); border-radius: 8px 8px 0 0;">
+                    <h4 class="mb-0"><i class="bi bi-star-fill"></i> Leave Feedback</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Request Summary -->
+                    <div class="bg-light p-3 rounded mb-4">
+                        <h6><i class="bi bi-clipboard-check"></i> Request Completed!</h6>
+                        <p class="mb-1"><strong>Service:</strong> {{ request.support_type }}</p>
+                        <p class="mb-1"><strong>Completed by:</strong> {{ volunteer.name }}</p>
+                        <p class="mb-0"><strong>Date:</strong> {{ request.completed_date.strftime('%d %b %Y') if request.completed_date else 'N/A' }}</p>
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Please rate your experience with <strong>{{ volunteer.name }}</strong>. 
+                        Your feedback helps us maintain quality service and recognise our amazing volunteers!
+                    </p>
+                    
+                    <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <label class="form-label"><i class="bi bi-stars"></i> Rating</label>
+                            <div class="rating-container">
+                                <div class="btn-group" role="group" aria-label="Rating">
+                                    <input type="radio" class="btn-check" name="rating" id="rating1" value="1" required>
+                                    <label class="btn btn-outline-warning" for="rating1">⭐ 1</label>
+                                    
+                                    <input type="radio" class="btn-check" name="rating" id="rating2" value="2">
+                                    <label class="btn btn-outline-warning" for="rating2">⭐ 2</label>
+                                    
+                                    <input type="radio" class="btn-check" name="rating" id="rating3" value="3">
+                                    <label class="btn btn-outline-warning" for="rating3">⭐ 3</label>
+                                    
+                                    <input type="radio" class="btn-check" name="rating" id="rating4" value="4">
+                                    <label class="btn btn-outline-warning" for="rating4">⭐ 4</label>
+                                    
+                                    <input type="radio" class="btn-check" name="rating" id="rating5" value="5" checked>
+                                    <label class="btn btn-outline-warning" for="rating5">⭐ 5</label>
+                                </div>
+                            </div>
+                            <div class="form-text">1 = Poor, 5 = Excellent</div>
+                        </div>
+                        
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label for="comment" class="form-label"><i class="bi bi-chat-left-text"></i> Your Comments (Optional)</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="4" 
+                                      placeholder="Tell us about your experience... Was the volunteer helpful? Punctual? Friendly?"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-send-check"></i> Submit Feedback
+                            </button>
+                            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x"></i> Skip for Now
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Why Feedback Matters -->
+            <div class="card mt-4 border-info">
+                <div class="card-body">
+                    <h6><i class="bi bi-heart-fill text-danger"></i> Why your feedback matters:</h6>
+                    <ul class="mb-0 small text-muted">
+                        <li>Helps volunteers know they're appreciated</li>
+                        <li>Helps other users find great volunteers</li>
+                        <li>Helps us improve our matching system</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

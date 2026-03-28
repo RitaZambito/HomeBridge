@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Login - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center fade-in-up">
+    <div class="col-md-5">
+        <div class="card shadow-lg" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <h4 class="display-heading mb-1" style="font-size: 1.4rem;"><i class="bi bi-box-arrow-in-right" style="color: var(--hb-teal);"></i> Login</h4>
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">Sign in to your HomeBridge account</p>
+                <form method="POST" action="{{ url_for('login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 500; font-size: 0.9rem;">I am a:</label>
+                        <select class="form-select" name="user_type" required>
+                            <option value="user">Service User</option>
+                            <option value="volunteer">Volunteer</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 500; font-size: 0.9rem;">Email Address</label>
+                        <input type="email" class="form-control" name="email" required placeholder="you@example.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" style="font-weight: 500; font-size: 0.9rem;">Password</label>
+                        <input type="password" class="form-control" name="password" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </button>
+                </form>
+
+                <hr style="margin: 1.25rem 0;">
+                <p class="text-center mb-0" style="font-size: 0.9rem;">
+                    Don't have an account? <a href="{{ url_for('register') }}" style="font-weight: 600;">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}View Message - HomeBridge Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Back Button -->
+            <a href="{{ url_for('admin_messages') }}" class="btn btn-secondary mb-3">
+                <i class="bi bi-arrow-left"></i> Back to Messages
+            </a>
+            
+            <!-- Message Card -->
+            <div class="card">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-envelope-open"></i> {{ message.subject }}</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Sender Info -->
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div class="me-3">
+                            {% if message.sender_type == 'user' %}
+                                <span class="badge bg-info p-2"><i class="bi bi-person" style="font-size: 1.5rem;"></i></span>
+                            {% else %}
+                                <span class="badge bg-warning p-2"><i class="bi bi-heart" style="font-size: 1.5rem;"></i></span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ message.sender_name }}</h6>
+                            <small class="text-muted">
+                                {% if message.sender_type == 'user' %}Service User{% else %}Volunteer{% endif %}
+                                &bull; {{ message.created_date.strftime('%d %b %Y at %H:%M') }}
+                            </small>
+                        </div>
+                        <div class="ms-auto d-flex align-items-center gap-2">
+                            {% if message.status == 'replied' %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Replied</span>
+                            {% elif message.status == 'read' %}
+                                <span class="badge bg-secondary"><i class="bi bi-envelope-open"></i> Read</span>
+                            {% else %}
+                                <span class="badge bg-primary"><i class="bi bi-envelope-fill"></i> New</span>
+                            {% endif %}
+                            {% if message.status != 'unread' %}
+                            <a href="{{ url_for('mark_message_unread', message_id=message.id) }}" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-envelope"></i> Mark as Unread
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Original Message Content -->
+                    <div class="bg-light p-3 rounded mb-4">
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ message.message }}</p>
+                    </div>
+                    
+                    <!-- Quick Action for Request Cancellation -->
+                    {% if message.subject == 'Request Cancellation' and message.linked_request_id %}
+                    <div class="alert alert-warning mb-4">
+                        <i class="bi bi-exclamation-triangle-fill"></i> <strong>Action Required:</strong> Volunteer is requesting cancellation of Request #{{ message.linked_request_id }}
+                        {% if not message.admin_reply %}
+                        <a href="{{ url_for('admin_requests', request_id=message.linked_request_id) }}" class="btn btn-danger btn-sm ms-2">
+                            <i class="bi bi-eye"></i> View Request #{{ message.linked_request_id }}
+                        </a>
+                        {% else %}
+                        <span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> Done</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Legacy Admin Reply (backward compatibility) -->
+                    {% if message.admin_reply and not message.replies %}
+                        <div class="mb-4">
+                            <h6><i class="bi bi-reply-fill text-success"></i> Your Reply:</h6>
+                            <div class="bg-success bg-opacity-10 p-3 rounded border border-success">
+                                <p class="mb-1" style="white-space: pre-wrap;">{{ message.admin_reply }}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> Replied on {{ message.replied_date.strftime('%d %b %Y at %H:%M') }}
+                                </small>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Thread Replies -->
+                    {% for reply in message.replies %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if reply.sender_type == 'admin' %}
+                                    <span class="badge bg-success p-1 me-2"><i class="bi bi-shield"></i></span>
+                                    <strong>Admin</strong>
+                                {% else %}
+                                    <span class="badge bg-primary p-1 me-2"><i class="bi bi-person"></i></span>
+                                    <strong>{{ reply.sender_name }}</strong>
+                                {% endif %}
+                                <small class="text-muted ms-2">{{ reply.created_date.strftime('%d %b %Y at %H:%M') }}</small>
+                            </div>
+                            {% if reply.sender_type == 'admin' %}
+                                <div class="bg-success bg-opacity-10 p-3 rounded border border-success">
+                                    <p class="mb-0" style="white-space: pre-wrap;">{{ reply.reply_text }}</p>
+                                </div>
+                            {% else %}
+                                <div class="bg-light p-3 rounded">
+                                    <p class="mb-0" style="white-space: pre-wrap;">{{ reply.reply_text }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Reply Form -->
+                    <div class="border-top pt-4">
+                        <h6><i class="bi bi-reply"></i> {% if message.admin_reply or message.replies %}Send Another Reply{% else %}Reply to this message{% endif %}</h6>
+                        <form method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="mb-3">
+                                <textarea class="form-control" name="reply" rows="4" 
+                                          placeholder="Type your reply here..." required></textarea>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-send"></i> Send Reply
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" disabled title="File attachments coming soon">
+                                    <i class="bi bi-paperclip"></i> Attach File
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

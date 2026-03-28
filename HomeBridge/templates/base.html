@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HomeBridge{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hb-teal: #2ABFAB;
+            --hb-teal-dark: #1D9E8F;
+            --hb-violet: #7C5CBF;
+            --hb-violet-dark: #5A3D96;
+            --hb-pink-accent: #E8709A;
+            --hb-navy: #1E1B3A;
+            --hb-gradient: linear-gradient(135deg, #1D9E8F, #5A3D96);
+            --hb-gradient-soft: linear-gradient(135deg, #2ABFAB, #7C5CBF);
+            --hb-gradient-light: linear-gradient(135deg, #E8F8F5, #EDE7F6);
+        }
+
+        body { font-family: 'Inter', sans-serif; background: #F7F8FC; color: #2D3142; }
+
+        /* ── Display headings ── */
+        .display-heading { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--hb-navy); }
+
+        /* ── Navbar ── */
+        .navbar-hb {
+            background: linear-gradient(135deg, #1E1B3A 0%, #2E2560 50%, #1D9E8F 100%);
+            padding: 0.8rem 0;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+            position: sticky; top: 0; z-index: 1020;
+        }
+        .navbar-hb .nav-link { color: rgba(255,255,255,0.95) !important; font-weight: 500; font-size: 1rem; transition: all 0.2s; }
+        .navbar-hb .nav-link:hover { color: #fff !important; }
+        .navbar-hb span.nav-link { color: rgba(255,255,255,0.95) !important; }
+        .brand-name { color: #fff; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.3px; line-height: 1.2; }
+        .brand-tagline { color: rgba(255,255,255,0.8); font-size: 0.7rem; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; line-height: 1; }
+
+        /* ── Buttons ── */
+        .btn-primary { background: var(--hb-gradient-soft); border: none; font-weight: 500; }
+        .btn-primary:hover { background: linear-gradient(135deg, #24A898, #6A4DB0); border: none; }
+        .btn-outline-primary { color: var(--hb-violet); border-color: var(--hb-violet); }
+        .btn-outline-primary:hover { background: var(--hb-violet); border-color: var(--hb-violet); color: #fff; }
+        .btn-success { background: linear-gradient(135deg, #2ABFAB, #20A899); border: none; }
+        .btn-success:hover { background: linear-gradient(135deg, #24A898, #1D9E8F); border: none; }
+        .btn-info { background: var(--hb-violet); border-color: var(--hb-violet); color: #fff; }
+        .btn-info:hover { background: var(--hb-violet-dark); color: #fff; }
+        .btn-secondary { background: #8892A0; border-color: #8892A0; }
+        .btn-danger { background: var(--hb-pink-accent); border-color: var(--hb-pink-accent); }
+        .btn-warning { background: #F0AD4E; border-color: #F0AD4E; }
+
+        /* ── Cards ── */
+        .card { border: none; border-radius: 14px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card:hover { transform: translateY(-1px); }
+        .card-header { border-radius: 14px 14px 0 0 !important; font-weight: 600; }
+
+        /* ── Gradient card headers ── */
+        .bg-primary { background: var(--hb-gradient-soft) !important; }
+        .bg-info { background: linear-gradient(135deg, #7C5CBF, #9B7DD4) !important; }
+        .bg-success { background: linear-gradient(135deg, #2ABFAB, #34D1BF) !important; }
+        .bg-danger { background: linear-gradient(135deg, #E8709A, #D4587E) !important; }
+        .bg-warning { background: linear-gradient(135deg, #F0AD4E, #F5C36D) !important; }
+        .bg-secondary { background: linear-gradient(135deg, #8892A0, #A0A8B4) !important; }
+        .bg-dark { background: var(--hb-navy) !important; }
+
+        /* ── Tables ── */
+        .table-dark, .table-dark th { background: var(--hb-navy) !important; border-color: rgba(255,255,255,0.08) !important; }
+
+        /* ── Badges ── */
+        .badge.bg-primary { background: var(--hb-gradient-soft) !important; }
+        .badge.bg-info { background: var(--hb-violet) !important; color: #fff !important; }
+        .badge.bg-success { background: var(--hb-teal) !important; }
+        .badge.bg-danger { background: var(--hb-pink-accent) !important; }
+
+        /* ── Alerts ── */
+        .alert-success { background: #E8F8F5; border-color: #2ABFAB; color: #1B7A6E; font-size: 1.05rem; }
+        .alert-info { background: #EDE7F6; border-color: #7C5CBF; color: #4A3580; }
+        .alert-danger { background: #FDE8EF; border-color: #E8709A; color: #9E3D5C; }
+        .alert-warning { background: #FFF8E8; border-color: #F0AD4E; color: #8A6D2F; }
+
+        /* ── Links ── */
+        a { color: var(--hb-violet); }
+        a:hover { color: var(--hb-violet-dark); }
+
+        /* ── Footer ── */
+        .footer-hb {
+            background: linear-gradient(135deg, #1E1B3A, #2E2560);
+            color: rgba(255,255,255,0.85);
+            padding: 1.6rem 0;
+            font-size: 0.85rem;
+        }
+        .footer-hb img { opacity: 0.6; }
+        .footer-hb .footer-brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 600; color: #fff; }
+        .footer-hb .footer-tagline { color: rgba(255,255,255,0.55); font-size: 0.7rem; letter-spacing: 1.2px; text-transform: uppercase; }
+        .footer-hb .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; transition: color 0.2s; }
+        .footer-hb .footer-links a:hover { color: var(--hb-teal); }
+        .footer-hb .footer-divider { border-top: 1px solid rgba(255,255,255,0.1); margin: 1.2rem 0 1rem; }
+        .footer-hb .footer-copy { color: rgba(255,255,255,0.45); font-size: 0.75rem; }
+
+        /* ── Notification badge ── */
+        .notif-badge { background: var(--hb-pink-accent) !important; }
+
+        /* ── Form controls focus ── */
+        .form-control:focus, .form-select:focus {
+            border-color: var(--hb-violet);
+            box-shadow: 0 0 0 0.2rem rgba(124,92,191,0.2);
+        }
+
+        /* ── Stat cards in dashboards ── */
+        .card-hover { transition: all 0.2s; cursor: pointer; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+        /* ── Dashboard gradient stat cards ── */
+        .stat-card {
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.18);
+        }
+        .stat-card .stat-icon { font-size: 1.8rem; opacity: 0.9; }
+        .stat-card .stat-number { font-size: 2rem; font-weight: 700; line-height: 1.1; margin: 0.3rem 0; }
+        .stat-card .stat-label { font-size: 0.8rem; opacity: 0.9; font-weight: 500; letter-spacing: 0.3px; }
+
+        .stat-card.active-stat { box-shadow: 0 8px 25px rgba(0,0,0,0.2); transform: translateY(-2px); }
+        .stat-card.active-stat::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 3px;
+            background: #fff;
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* Stat card gradient colours */
+        .stat-saved { background: linear-gradient(135deg, #F0AD4E, #E88B6A); }
+        .stat-awaiting { background: linear-gradient(135deg, #7C5CBF, #5A8BDA); }
+        .stat-progress { background: linear-gradient(135deg, #5A8BDA, #4ECDC4); }
+        .stat-completed { background: linear-gradient(135deg, #2ABFAB, #5A8BDA); }
+        .stat-cancelled { background: linear-gradient(135deg, #E8709A, #A864C6); }
+
+        /* ── Dashboard welcome banner ── */
+        .welcome-banner {
+            background: var(--hb-gradient-light);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(42,191,171,0.12);
+        }
+        .welcome-banner h2 { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--hb-navy); margin-bottom: 0.25rem; }
+        .welcome-banner .welcome-sub { color: #6B7280; font-size: 1.05rem; }
+
+        /* ── Quick action buttons in dashboard ── */
+        .quick-actions { display: flex; gap: 0.5rem; }
+        .quick-actions .btn { border-radius: 50px; padding: 0.38rem 0; font-size: 0.82rem; font-weight: 500; transition: all 0.2s; width: 125px; text-align: center; }
+        .quick-actions .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+
+        /* ── Empty state when no tab selected ── */
+        .dashboard-empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9CA3AF;
+        }
+        .dashboard-empty-state .empty-icon { font-size: 3.5rem; opacity: 0.35; margin-bottom: 0.75rem; }
+        .dashboard-empty-state p { font-size: 1rem; max-width: 350px; margin: 0 auto; }
+
+        /* ── Hero section (homepage) ── */
+        .hero-section {
+            background: linear-gradient(135deg, #1E1B3A 0%, #2E2560 40%, #1D9E8F 100%);
+            border-radius: 20px;
+            padding: 3.5rem 3rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2.5rem;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(42,191,171,0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            left: 10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(124,92,191,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-section h1 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.15; margin-bottom: 1rem; }
+        .hero-section .hero-tagline { font-size: 1.15rem; opacity: 0.9; max-width: 500px; line-height: 1.6; }
+        .hero-features { margin-top: 2rem; }
+        .hero-features .feature-item { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; }
+        .hero-features .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .hero-features .feature-text { font-size: 0.95rem; opacity: 0.9; }
+        .hero-features .feature-text strong { display: block; opacity: 1; margin-bottom: 0.1rem; }
+
+        /* ── How it works section ── */
+        .how-it-works { margin-bottom: 2rem; }
+        .how-it-works h3 { font-family: 'Playfair Display', serif; color: var(--hb-navy); text-align: center; margin-bottom: 1.5rem; }
+        .step-card {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            height: 100%;
+            transition: transform 0.2s;
+        }
+        .step-card:hover { transform: translateY(-3px); }
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+        .step-card h5 { font-weight: 600; color: var(--hb-navy); margin-bottom: 0.4rem; }
+        .step-card p { color: #6B7280; font-size: 0.9rem; margin-bottom: 0; }
+
+        /* ── Volunteer quick action cards ── */
+        .vol-quick-card {
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .vol-quick-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+
+        /* ── Accessibility ── */
+        a:focus-visible, .btn:focus-visible, .form-control:focus-visible, .form-select:focus-visible, .nav-link:focus-visible {
+            outline: 3px solid var(--hb-violet);
+            outline-offset: 2px;
+        }
+        a.text-decoration-none:focus-visible .card { outline: 3px solid var(--hb-violet); outline-offset: 2px; }
+        .tab-card:focus-visible { outline: 3px solid var(--hb-violet); outline-offset: 2px; cursor: pointer; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+            .card-hover:hover, .stat-card:hover, .step-card:hover, .vol-quick-card:hover { transform: none; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 992px) {
+            .welcome-banner .row { flex-direction: column; }
+            .welcome-banner .col-auto { width: 100%; margin-top: 1rem; }
+            .btn-create-request { width: 100%; }
+            .notif-badge { position: relative !important; top: auto !important; left: auto !important; transform: none !important; margin-left: 4px; vertical-align: middle; }
+        }
+
+        @media (max-width: 768px) {
+            .stat-card { padding: 1rem 0.5rem; }
+            .stat-card .stat-number { font-size: 1.5rem; }
+            .stat-card .stat-icon { font-size: 1.3rem; }
+            .stat-card .stat-label { font-size: 0.7rem; }
+            .welcome-banner { padding: 1.2rem !important; }
+            .welcome-banner h3 { font-size: 1.3rem; }
+            .hero-section { padding: 3rem 1rem !important; }
+            .hero-section h1 { font-size: 2rem; }
+            .hero-section .hero-tagline { font-size: 1rem; }
+            .quick-actions .btn { width: 110px; font-size: 0.75rem; }
+            .btn-create-request { font-size: 0.9rem !important; padding: 0.6rem 1.2rem !important; }
+            .vol-quick-card { padding: 1.2rem !important; }
+            .card-body { padding: 1rem; }
+            h2 { font-size: 1.5rem; }
+            .lead { font-size: 1rem; }
+            .step-card { padding: 1.5rem 1rem !important; }
+            .step-number { width: 50px; height: 50px; font-size: 1.2rem; }
+        }
+
+        @media (max-width: 576px) {
+            .container { padding-left: 1rem; padding-right: 1rem; }
+            .stat-card .stat-number { font-size: 1.3rem; }
+            .stat-card .stat-label { font-size: 0.65rem; }
+            .stat-card .stat-icon { font-size: 1.1rem; }
+            .navbar-hb .nav-link { font-size: 0.85rem; padding: 0.3rem 0.5rem; }
+            .brand-name { font-size: 1.2rem; }
+            .brand-tagline { font-size: 0.6rem; }
+            .hero-section h1 { font-size: 1.5rem; }
+            .hero-section .hero-tagline { font-size: 0.9rem; }
+            .quick-actions { flex-wrap: wrap; gap: 0.4rem !important; }
+            .quick-actions .btn { width: 100px; }
+            .welcome-banner h3 { font-size: 1.1rem; }
+            .footer-hb { padding: 1rem 0; font-size: 0.8rem; }
+            .vol-quick-card h5 { font-size: 1rem; }
+            .vol-quick-card p { font-size: 0.85rem; }
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--hb-navy);
+            color: #fff;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0 0 8px 8px;
+            z-index: 9999;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .skip-link:focus { top: 0; color: #fff; }
+
+        /* ── Page load fade-in ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.4s ease-out both; }
+        .fade-in-up-d1 { animation: fadeInUp 0.4s ease-out 0.05s both; }
+        .fade-in-up-d2 { animation: fadeInUp 0.4s ease-out 0.1s both; }
+        .fade-in-up-d3 { animation: fadeInUp 0.4s ease-out 0.15s both; }
+        .fade-in-up-d4 { animation: fadeInUp 0.4s ease-out 0.2s both; }
+        .fade-in-up-d5 { animation: fadeInUp 0.4s ease-out 0.25s both; }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Skip to content for keyboard navigation -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-hb" aria-label="Main navigation">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand d-flex align-items-center text-decoration-none">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="HomeBridge" height="50" class="me-2" style="border-radius: 8px;">
+                <div class="d-flex flex-column justify-content-center">
+                    <span class="brand-name">HomeBridge</span>
+                    <span class="brand-tagline">Care starts at home</span>
+                </div>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.user_type == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                                </a>
+                            </li>
+                        {% elif current_user.user_type == 'volunteer' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('index') }}">
+                                    <i class="bi bi-house-door"></i> Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('volunteer_dashboard') }}">
+                                    <i class="bi bi-house-heart-fill"></i> My Space
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('index') }}">
+                                    <i class="bi bi-house-door"></i> Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('user_dashboard') }}">
+                                    <i class="bi bi-house-heart-fill"></i> My Space
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{{ url_for('notifications') }}" aria-label="Notifications{% if unread_notifications > 0 %} ({{ unread_notifications }} unread){% endif %}"{% if unread_notifications > 0 %} style="margin-right: 8px;"{% endif %}>
+                                <i class="bi bi-bell" style="font-size: 1.1rem;"></i>
+                                {% if unread_notifications > 0 %}
+                                    <span class="position-absolute translate-middle badge rounded-pill notif-badge" style="font-size: 0.6rem; top: 8px; left: 85%;">
+                                        {{ unread_notifications }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            {% if current_user.user_type == 'admin' %}
+                                <span class="nav-link">
+                                    <i class="bi bi-person-circle"></i> {{ current_user.name }}
+                                </span>
+                            {% elif current_user.user_type == 'volunteer' %}
+                                <a class="nav-link" href="{{ url_for('volunteer_profile') }}">
+                                    <i class="bi bi-person-circle"></i> {{ current_user.name }}
+                                </a>
+                            {% else %}
+                                <a class="nav-link" href="{{ url_for('user_profile') }}">
+                                    <i class="bi bi-person-circle"></i> {{ current_user.name }}
+                                </a>
+                            {% endif %}
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" style="border-radius: 10px;">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="container my-4 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-hb mt-5" role="contentinfo">
+        <div class="container text-center">
+            <p class="footer-copy mb-0">
+                &copy; 2026 HomeBridge &middot; Developed by Rita Zambito (2245801)
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) { window.location.reload(); }
+        });
+    </script>
+</body>
+</html>

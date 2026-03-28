@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages - HomeBridge Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-envelope-fill"></i> Messages & Support</h2>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+            {% if unread_count > 0 %}
+                <span class="badge bg-danger">{{ unread_count }} unread message(s)</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Messages List -->
+    <div class="row">
+        <div class="col-12">
+            {% if messages %}
+                <div class="text-end mb-3">
+                    <form method="POST" action="{{ url_for('admin_clear_messages') }}" class="d-inline"
+                          onsubmit="return confirm('Delete all messages? This cannot be undone.')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i> Delete All
+                        </button>
+                    </form>
+                </div>
+                {% for message in messages %}
+                    <div class="card mb-3 
+                        {% if message.status == 'unread' %}border-primary border-2
+                        {% elif message.status == 'replied' %}border-success
+                        {% else %}border-secondary{% endif %}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% if message.status == 'unread' %}
+                                            <span class="badge bg-primary me-2"><i class="bi bi-envelope-fill"></i> NEW</span>
+                                        {% elif message.status == 'replied' %}
+                                            <span class="badge bg-success me-2"><i class="bi bi-check-circle"></i> Replied</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary me-2"><i class="bi bi-envelope-open"></i> Read</span>
+                                        {% endif %}
+                                        
+                                        {% if message.sender_type == 'user' %}
+                                            <span class="badge bg-info me-2"><i class="bi bi-person"></i> Service User</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark me-2"><i class="bi bi-heart"></i> Volunteer</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <h5 class="card-title mb-1">
+                                        <i class="bi bi-chat-left-text"></i> {{ message.subject }}
+                                    </h5>
+                                    <p class="card-text text-muted mb-1">
+                                        <strong>From:</strong> {{ message.sender_name }}
+                                    </p>
+                                    <p class="card-text">
+                                        {{ message.message[:100] }}{% if message.message|length > 100 %}...{% endif %}
+                                    </p>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> {{ message.created_date.strftime('%d %b %Y, %H:%M') }}
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <a href="{{ url_for('view_message', message_id=message.id) }}" 
+                                       class="btn {% if message.status == 'unread' %}btn-primary{% else %}btn-outline-primary{% endif %} mb-1">
+                                        <i class="bi bi-eye"></i> View & Reply
+                                    </a>
+                                    <form method="POST" action="{{ url_for('admin_delete_message', msg_id=message.id) }}" class="d-inline"
+                                          onsubmit="return confirm('Delete this message?')">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                        <h5 class="text-muted mt-3">No messages yet</h5>
+                        <p class="text-muted">When users or volunteers contact you, their messages will appear here.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

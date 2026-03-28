@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-person-circle"></i> My Profile</h2>
+            <p class="text-muted">View your personal information</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Personal Info -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-person-fill"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ user.name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Phone:</strong> {{ user.phone or '-' }}</p>
+                    <p><strong>Address:</strong> {{ user.address or '-' }}</p>
+                    <p><strong>Postcode:</strong> {{ user.postcode or '-' }}</p>
+                    <p><strong>Emergency Contact:</strong> {{ user.emergency_contact or '-' }}</p>
+                    <p><strong>Member since:</strong> {{ user.registered_date.strftime('%d %b %Y') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Needs -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-clipboard-heart"></i> Support Needs</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.conditions %}
+                        {% for need in user.conditions.split(', ') %}
+                            <span class="badge bg-primary me-1 mb-1" style="font-size: 0.9rem;">{{ need }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No support needs specified.</p>
+                    {% endif %}
+                    <p class="text-muted mt-3 mb-0"><small><i class="bi bi-shield-lock"></i> This information is only visible to you and administrators.</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="{{ url_for('user_edit_profile') }}" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+            </a>
+            <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to My Space
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

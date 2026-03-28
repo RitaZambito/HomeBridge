@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}All Requests - HomeBridge Admin{% endblock %}
+
+{% block content %}
+{% if single_request_id %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-clipboard-check text-info"></i> Request #{{ single_request_id }}</h2>
+    <a href="{{ url_for('admin_requests', filter='in_progress') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to All Requests
+    </a>
+</div>
+{% else %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-clipboard-check text-info"></i> All Requests</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+
+<!-- Filter Buttons -->
+<div class="mb-3">
+    <a href="{{ url_for('admin_requests') }}" class="btn {% if not filter %}btn-dark{% else %}btn-outline-dark{% endif %}">All</a>
+    <a href="{{ url_for('admin_requests') }}?filter=awaiting" class="btn {% if filter == 'awaiting' %}btn-info{% else %}btn-outline-info{% endif %}">Awaiting</a>
+    <a href="{{ url_for('admin_requests') }}?filter=in_progress" class="btn {% if filter == 'in_progress' %}btn-primary{% else %}btn-outline-primary{% endif %}">In Progress</a>
+    <a href="{{ url_for('admin_requests') }}?filter=completed" class="btn {% if filter == 'completed' %}btn-success{% else %}btn-outline-success{% endif %}">Completed</a>
+    <a href="{{ url_for('admin_requests') }}?filter=cancelled" class="btn {% if filter == 'cancelled' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Cancelled</a>
+</div>
+
+<!-- Search by Booking ID -->
+<div class="mb-3">
+    <div class="input-group" style="max-width: 300px;">
+        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+        <input type="text" id="bookingSearch" class="form-control" placeholder="Search by booking ID..." onkeyup="filterBookings()">
+    </div>
+</div>
+{% endif %}
+
+{% if requests %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover text-center align-middle" style="white-space: nowrap;">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Support Type</th>
+                            {% if filter != 'cancelled' %}
+                            <th>Urgency</th>
+                            {% endif %}
+                            <th>Status</th>
+                            <th>Volunteer</th>
+                            {% if filter == 'cancelled' or not filter %}
+                            <th>Cancelled By</th>
+                            {% endif %}
+                            <th>Date</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr id="request-{{ req.id }}">
+                            <td>#{{ req.id }}</td>
+                            <td>{{ req.user.name if req.user else 'User #' ~ req.user_id }}</td>
+                            <td>{{ req.support_type }}</td>
+                            {% if filter != 'cancelled' %}
+                            <td>
+                                <span class="badge
+                                    {% if req.urgency == 'High' %}bg-danger
+                                    {% elif req.urgency == 'Medium' %}bg-warning
+                                    {% else %}bg-secondary
+                                    {% endif %}">
+                                    {{ req.urgency }}
+                                </span>
+                            </td>
+                            {% endif %}
+                            <td>
+                                <span class="badge
+                                    {% if req.status == 'awaiting' %}bg-info
+                                    {% elif req.status == 'in_progress' %}bg-primary
+                                    {% elif req.status == 'completed' %}bg-success
+                                    {% elif req.status == 'cancelled' %}bg-danger
+                                    {% endif %}">
+                                    {% if req.status == 'in_progress' %}In Progress
+                                    {% elif req.status == 'awaiting' %}Awaiting
+                                    {% elif req.status == 'completed' %}Completed
+                                    {% elif req.status == 'cancelled' %}Cancelled
+                                    {% else %}{{ req.status }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if req.volunteer %}
+                                    {{ req.volunteer.name }}
+                                {% elif req.cancelled_volunteer_name %}
+                                    {{ req.cancelled_volunteer_name }}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% if filter == 'cancelled' or not filter %}
+                            <td>
+                                {% if req.status == 'cancelled' and req.cancelled_by_name %}
+                                    <span class="text-danger"><small><i class="bi bi-x-circle"></i> {{ req.cancelled_by_name }}{% if req.cancelled_date %}<br>{{ req.cancelled_date.strftime('%d %b %Y %H:%M') }}{% endif %}</small></span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td>{{ req.preferred_date|format_date }}</td>
+                            <td>{{ req.created_date.strftime('%d %b %Y') }}</td>
+                            <td>
+                                {% if req.status in ['in_progress', 'awaiting'] %}
+                                <form method="POST" action="{{ url_for('admin_cancel_request', request_id=req.id) }}" class="d-inline" onsubmit="return confirm('Cancel this request?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No requests found.
+    </div>
+{% endif %}
+
+<script>
+function filterBookings() {
+    var input = document.getElementById('bookingSearch').value.trim();
+    var rows = document.querySelectorAll('table tbody tr');
+    rows.forEach(function(row) {
+        var id = row.cells[0].textContent.replace('#', '').trim();
+        row.style.display = (!input || id.startsWith(input)) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-person-circle"></i> My Profile</h2>
+            <p class="text-muted">View and manage your volunteer profile</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Personal Info -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-person-fill"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ volunteer.name }}</p>
+                    <p><strong>Email:</strong> {{ volunteer.email }}</p>
+                    <p><strong>Phone:</strong> {{ volunteer.phone }}</p>
+                    <p><strong>Address:</strong> {{ volunteer.address }}</p>
+                    <p><strong>Postcode:</strong> {{ volunteer.postcode }}</p>
+                    <p><strong>Member since:</strong> {{ volunteer.registered_date.strftime('%d %b %Y') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #2ABFAB, #5A8BDA); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> My Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h2 class="text-success">{{ volunteer.total_completed }}</h2>
+                            <p class="text-muted mb-0">Requests Completed</p>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h2 class="text-warning">
+                                {% if volunteer.average_rating > 0 %}
+                                    {{ volunteer.average_rating }}/5 <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h2>
+                            <p class="text-muted mb-0">Average Rating</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Bio -->
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-quote"></i> About Me</h5>
+                </div>
+                <div class="card-body">
+                    {% if volunteer.bio %}
+                        <p class="lead">"{{ volunteer.bio }}"</p>
+                    {% else %}
+                        <p class="text-muted">No bio added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Services Offered -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #1E1B3A, #7C5CBF); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-tools"></i> Services I Offer</h5>
+                </div>
+                <div class="card-body">
+                    {% if volunteer.skills %}
+                        {% for skill in volunteer.skills.split(',') %}
+                            <span class="badge bg-primary me-1 mb-1" style="font-size: 0.9rem;">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No services selected.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Availability -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #F0AD4E, #E88B6A); border-radius: 8px 8px 0 0;">
+                    <h5 class="mb-0"><i class="bi bi-calendar-week"></i> My Weekly Availability</h5>
+                </div>
+                <div class="card-body">
+                    {% set available_days = [] %}
+                    {% if volunteer.monday_slot and volunteer.monday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Monday', volunteer.monday_slot)) %}
+                    {% endif %}
+                    {% if volunteer.tuesday_slot and volunteer.tuesday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Tuesday', volunteer.tuesday_slot)) %}
+                    {% endif %}
+                    {% if volunteer.wednesday_slot and volunteer.wednesday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Wednesday', volunteer.wednesday_slot)) %}
+                    {% endif %}
+                    {% if volunteer.thursday_slot and volunteer.thursday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Thursday', volunteer.thursday_slot)) %}
+                    {% endif %}
+                    {% if volunteer.friday_slot and volunteer.friday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Friday', volunteer.friday_slot)) %}
+                    {% endif %}
+                    {% if volunteer.saturday_slot and volunteer.saturday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Saturday', volunteer.saturday_slot)) %}
+                    {% endif %}
+                    {% if volunteer.sunday_slot and volunteer.sunday_slot != 'Not Available' %}
+                        {% set _ = available_days.append(('Sunday', volunteer.sunday_slot)) %}
+                    {% endif %}
+                    
+                    {% if available_days %}
+                        <table class="table table-sm table-bordered text-center mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Available Slot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day, slot in available_days %}
+                                <tr>
+                                    <td><strong>{{ day }}</strong></td>
+                                    <td class="table-success">{{ slot }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted">No availability set yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <a href="{{ url_for('volunteer_edit_profile') }}" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+            </a>
+            <a href="{{ url_for('volunteer_dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to My Space
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

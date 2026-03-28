@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}Select Volunteer - HomeBridge{% endblock %}
+
+{% block content %}
+{% if match_scenario == "perfect" %}
+    <h2><i class="bi bi-search"></i> Best Matches for Your Request</h2>
+    <p class="text-muted">Our smart matching system found <strong>{{ total_available }}</strong> volunteer{{ 's' if total_available != 1 else '' }} based on your location, availability and service needs.</p>
+{% elif match_scenario == "different_slot" %}
+    <h2><i class="bi bi-clock"></i> No Exact Match Found</h2>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> <strong>No volunteers available for the selected time slot, but these volunteers are available on the same day. Try sending a request!</strong>
+        <div class="mt-2" style="padding-left: 1.25em;">
+            <strong>or</strong> <a href="{{ url_for('create_request') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Create New Request
+            </a>
+        </div>
+    </div>
+{% elif match_scenario == "day_unavailable" %}
+    <h2><i class="bi bi-calendar-x"></i> No Volunteers Available</h2>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> <strong>No volunteers available on the day selected, but these volunteers might be flexible. Try sending a request!</strong>
+        <div class="mt-2" style="padding-left: 1.25em;">
+            <strong>or</strong> <a href="{{ url_for('create_request') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> Create New Request
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header text-white" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4); border-radius: 8px 8px 0 0;">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Your Search Details</h5>
+            {% if match_scenario == "perfect" %}
+            <button id="saveSearchBtn" onclick="saveSearch({{ request.id }})" class="btn {% if request.is_saved %}btn-success{% else %}btn-light{% endif %} btn-sm">
+                <i class="bi {% if request.is_saved %}bi-heart-fill{% else %}bi-heart{% endif %}" id="heartIcon"></i> 
+                <span id="saveText">{% if request.is_saved %}Saved{% else %}Save Search Results{% endif %}</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Support Type:</strong> {{ request.support_type }}</p>
+                <p><strong>Description:</strong> {{ request.description }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Urgency:</strong> 
+                    <span class="badge bg-{% if request.urgency == 'High' %}danger{% elif request.urgency == 'Medium' %}warning{% else %}success{% endif %}">
+                        {{ request.urgency }}
+                    </span>
+                </p>
+                <p><strong>Date:</strong> {{ request.preferred_date|format_date }} 
+                    {% if request.time_slot %}<span class="badge bg-secondary">{{ request.time_slot }}</span>{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveSearch(requestId) {
+    const btn = document.getElementById('saveSearchBtn');
+    const icon = document.getElementById('heartIcon');
+    const text = document.getElementById('saveText');
+    
+    const originalText = text.textContent;
+    const isSaved = icon.classList.contains('bi-heart-fill');
+    
+    // Disable button
+    btn.disabled = true;
+    text.textContent = 'Saving...';
+    
+    fetch(`/save-search/${requestId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Toggle based on new state
+                if (data.is_saved) {
+                    icon.className = 'bi bi-heart-fill';
+                    text.textContent = 'Saved';
+                    btn.className = 'btn btn-success btn-sm';
+                } else {
+                    icon.className = 'bi bi-heart';
+                    text.textContent = 'Save Search Results';
+                    btn.className = 'btn btn-light btn-sm';
+                }
+                
+                // Re-enable button
+                btn.disabled = false;
+                
+                // Show message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                alertDiv.innerHTML = `
+                    <i class="bi bi-check-circle"></i> ${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.card.mb-4').insertAdjacentElement('afterend', alertDiv);
+                setTimeout(() => alertDiv.remove(), 3000);
+            } else {
+                alert('Error: ' + data.message);
+                btn.disabled = false;
+                text.textContent = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to save search. Please try again.');
+            btn.disabled = false;
+            text.textContent = originalText;
+        });
+}
+</script>
+
+{% if matches %}
+    <div class="row" id="matchResults">
+        {% for match in matches %}
+        <div class="col-md-12 mb-3 match-card" {% if loop.index > 5 %}style="display: none;"{% endif %}>
+            <div class="card {% if loop.index == 1 and match.is_available %}border-success border-3{% elif match.badge_type == 'different_slot' %}border-warning{% elif match.badge_type == 'day_unavailable' %}border-danger{% endif %}">
+                <div class="card-header {% if loop.index == 1 and match.is_available %}text-white{% elif match.badge_type == 'different_slot' %}text-white{% elif match.badge_type == 'day_unavailable' %}text-white{% endif %}" style="{% if loop.index == 1 and match.is_available %}background: linear-gradient(135deg, #2ABFAB, #5A8BDA);{% elif match.badge_type == 'different_slot' %}background: linear-gradient(135deg, #F0AD4E, #E88B6A);{% elif match.badge_type == 'day_unavailable' %}background: linear-gradient(135deg, #DC3545, #C82333);{% else %}background: #f8f9fa;{% endif %} border-radius: 8px 8px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>
+                            {% if loop.index == 1 and match.is_available %}
+                                <i class="bi bi-star-fill"></i> <strong>BEST MATCH</strong>
+                            {% elif match.badge_type == 'different_slot' %}
+                                <i class="bi bi-clock"></i> <strong>Different time slot</strong>
+                            {% elif match.badge_type == 'day_unavailable' %}
+                                <i class="bi bi-calendar-x"></i> <strong>Day unavailable</strong>
+                            {% else %}
+                                Match #{{ loop.index }}
+                            {% endif %}
+                        </span>
+                        <span class="badge {% if loop.index == 1 and match.is_available %}bg-light text-success{% else %}bg-success text-white{% endif %} fs-6">
+                            {{ match.score }}% compatibility
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <i class="bi bi-person-circle"></i> {{ match.volunteer.name }}
+                                {% if match.volunteer.average_rating > 0 %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-star-fill"></i> {{ match.volunteer.average_rating }}/5
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-info">New Volunteer</span>
+                                {% endif %}
+                            </h5>
+                            
+                            <!-- Availability status -->
+                            <div class="mb-2">
+                                {% if match.is_available %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ match.availability_match }}</span>
+                                {% elif match.badge_type == 'different_slot' %}
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> {{ match.availability_match }}</span>
+                                {% elif match.badge_type == 'day_unavailable' %}
+                                    <span class="badge bg-danger"><i class="bi bi-calendar-x"></i> {{ match.availability_match }}</span>
+                                {% endif %}
+                                
+                                {% if match.has_skill %}
+                                    <span class="badge bg-primary"><i class="bi bi-tools"></i> Offers this service</span>
+                                {% else %}
+                                    <span class="badge bg-secondary"><i class="bi bi-x-circle"></i> Different services</span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Bio -->
+                            {% if match.volunteer.bio %}
+                            <div class="alert alert-light py-2 mb-3">
+                                <i class="bi bi-quote"></i> <em>"{{ match.volunteer.bio }}"</em>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2">
+                                        <i class="bi bi-geo-alt-fill text-danger"></i>
+                                        <strong>Distance:</strong>
+                                        {% if match.distance != 'N/A' %}
+                                            {{ match.distance }} miles away
+                                        {% else %}
+                                            Location available
+                                        {% endif %}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-tools text-primary"></i>
+                                        <strong>Skills:</strong> {{ match.skills }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-trophy text-warning"></i>
+                                        <strong>Completed:</strong> {{ match.volunteer.total_completed }} requests
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Mini availability grid - ONLY available days -->
+                                    <p class="mb-1"><strong><i class="bi bi-calendar-week"></i> Available Days:</strong></p>
+                                    <small>
+                                        {% if match.volunteer.monday_slot != 'Not Available' %}<span class="text-success">Mon: {{ match.volunteer.monday_slot }}</span><br>{% endif %}
+                                        {% if match.volunteer.tuesday_slot != 'Not Available' %}<span class="text-success">Tue: {{ match.volunteer.tuesday_slot }}</span><br>{% endif %}
+                                        {% if match.volunteer.wednesday_slot != 'Not Available' %}<span class="text-success">Wed: {{ match.volunteer.wednesday_slot }}</span><br>{% endif %}
+                                        {% if match.volunteer.thursday_slot != 'Not Available' %}<span class="text-success">Thu: {{ match.volunteer.thursday_slot }}</span><br>{% endif %}
+                                        {% if match.volunteer.friday_slot != 'Not Available' %}<span class="text-success">Fri: {{ match.volunteer.friday_slot }}</span><br>{% endif %}
+                                        {% if match.volunteer.saturday_slot != 'Not Available' %}<span class="text-success">Sat: {{ match.volunteer.saturday_slot }}</span><br>{% endif %}
+                                        {% if match.volunteer.sunday_slot != 'Not Available' %}<span class="text-success">Sun: {{ match.volunteer.sunday_slot }}</span><br>{% endif %}
+                                    </small>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center d-flex align-items-center">
+                            {% if match.is_available %}
+                            <a href="{{ url_for('confirm_volunteer', request_id=request.id, volunteer_id=match.volunteer.id) }}"
+                               class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-check-circle-fill"></i><br>
+                                Select This Volunteer
+                            </a>
+                            {% elif match.badge_type == 'different_slot' %}
+                            <button type="button" class="btn btn-outline-warning btn-lg w-100"
+                                    data-bs-toggle="modal" data-bs-target="#slotModal{{ match.volunteer.id }}">
+                                <i class="bi bi-clock"></i><br>
+                                Choose Time Slot
+                            </button>
+                            {% elif match.badge_type == 'day_unavailable' %}
+                            <a href="{{ url_for('confirm_volunteer', request_id=request.id, volunteer_id=match.volunteer.id) }}"
+                               class="btn btn-outline-danger btn-lg w-100">
+                                <i class="bi bi-calendar-x"></i><br>
+                                Request Anyway<br>
+                                <small>(Day unavailable)</small>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if matches|length > 5 %}
+    <div class="text-center mb-4" id="showMoreContainer">
+        <button id="showMoreBtn" class="btn btn-outline-primary btn-lg" onclick="showMore()">
+            <i class="bi bi-chevron-down"></i> Show more results 
+            <span id="remainingCount">({{ matches|length - 5 }} more)</span>
+        </button>
+    </div>
+
+    <script>
+    let visibleCount = 5;
+    const totalCards = {{ matches|length }};
+    
+    function showMore() {
+        const cards = document.querySelectorAll('.match-card');
+        const nextBatch = Math.min(visibleCount + 5, totalCards);
+        
+        for (let i = visibleCount; i < nextBatch; i++) {
+            cards[i].style.display = '';
+        }
+        visibleCount = nextBatch;
+        
+        // Update remaining count
+        const remaining = totalCards - visibleCount;
+        if (remaining > 0) {
+            document.getElementById('remainingCount').textContent = `(${remaining} more)`;
+        } else {
+            document.getElementById('showMoreContainer').style.display = 'none';
+        }
+    }
+    </script>
+    {% endif %}
+
+    <!-- Time slot modals - placed outside card layout to prevent flickering -->
+    {% for match in matches %}
+        {% if match.badge_type == 'different_slot' %}
+        <div class="modal fade" id="slotModal{{ match.volunteer.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #F0AD4E, #E88B6A); color: white;">
+                        <h5 class="modal-title"><i class="bi bi-clock"></i> Change Time Slot</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You requested <strong>{{ request.time_slot }}</strong>, but <strong>{{ match.volunteer.name }}</strong> is available at a different time on this day.</p>
+                        <p>Would you like to book at their available time instead?</p>
+                        <div class="d-grid gap-2">
+                            {% set slot_time_map = {'Morning': '09:00-12:00', 'Afternoon': '12:00-15:00', 'Late Afternoon': '15:00-18:00', 'Flexible': ''} %}
+                            {% if match.volunteer_slot == 'Flexible' %}
+                                <a href="{{ url_for('confirm_volunteer', request_id=request.id, volunteer_id=match.volunteer.id, time_slot='09:00-12:00') }}"
+                                   class="btn btn-outline-success"><i class="bi bi-sun"></i> Morning (09:00–12:00)</a>
+                                <a href="{{ url_for('confirm_volunteer', request_id=request.id, volunteer_id=match.volunteer.id, time_slot='12:00-15:00') }}"
+                                   class="btn btn-outline-success"><i class="bi bi-brightness-high"></i> Afternoon (12:00–15:00)</a>
+                                <a href="{{ url_for('confirm_volunteer', request_id=request.id, volunteer_id=match.volunteer.id, time_slot='15:00-18:00') }}"
+                                   class="btn btn-outline-success"><i class="bi bi-sunset"></i> Late Afternoon (15:00–18:00)</a>
+                            {% else %}
+                                <a href="{{ url_for('confirm_volunteer', request_id=request.id, volunteer_id=match.volunteer.id, time_slot=slot_time_map[match.volunteer_slot]) }}"
+                                   class="btn btn-success btn-lg">
+                                    <i class="bi bi-check-circle"></i> Book at {{ match.volunteer_slot }} ({{ slot_time_map[match.volunteer_slot] }})
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+{% else %}
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> No volunteers available for your selected date and time. 
+        <br>Please try a different date or time slot.
+    </div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to My Space
+    </a>
+</div>
+
+{% endblock %}

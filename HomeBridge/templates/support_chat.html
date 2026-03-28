@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Support Chat - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2><i class="bi bi-chat-dots-fill"></i> Support Chat</h2>
+                {% if messages %}
+                <form method="POST" action="{{ url_for('clear_chat') }}" class="d-inline"
+                      onsubmit="return confirm('Clear all chat history? This cannot be undone.')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash"></i> Clear Chat History
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Chat Card -->
+            <div class="card">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4); border-radius: 8px 8px 0 0;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-fill me-2" style="font-size: 1.3rem;"></i>
+                        <div>
+                            <strong>HomeBridge Admin</strong>
+                            <br><small style="opacity: 0.8;">The admin will respond as soon as possible</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages Area -->
+                <div class="card-body" style="height: 450px; overflow-y: auto; background: #f8f9fa;" id="chatArea">
+                    {% if messages %}
+                        {% for msg in messages %}
+                            {% if msg.sender_type != 'admin' %}
+                                <!-- My message (left) -->
+                                <div class="d-flex mb-3">
+                                    <div class="me-2">
+                                        <span class="badge bg-primary p-2"><i class="bi bi-person" style="font-size: 0.9rem;"></i></span>
+                                    </div>
+                                    <div style="max-width: 75%;">
+                                        <div class="bg-white p-3 rounded shadow-sm">
+                                            <small class="text-muted d-block mb-1"><strong>You</strong></small>
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ msg.message }}</p>
+                                        </div>
+                                        <small class="text-muted">{{ msg.created_date.strftime('%d %b %Y, %H:%M') }}</small>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- Admin message (right) -->
+                                <div class="d-flex mb-3 justify-content-end">
+                                    <div style="max-width: 75%;">
+                                        <div class="bg-white p-3 rounded shadow-sm" style="border-left: 3px solid var(--hb-teal);">
+                                            <small class="text-muted d-block mb-1"><strong>{{ msg.sender_name }}</strong> &bull; Admin</small>
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ msg.message }}</p>
+                                        </div>
+                                        <small class="text-muted d-block text-end">{{ msg.created_date.strftime('%d %b %Y, %H:%M') }}</small>
+                                    </div>
+                                    <div class="ms-2">
+                                        <span class="badge bg-warning p-2"><i class="bi bi-shield" style="font-size: 0.9rem;"></i></span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-chat-dots text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No messages yet. Start a conversation with the admin.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer bg-white">
+                    <form method="POST" class="d-flex align-items-end gap-2">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if prefill_request_id %}
+                            <input type="hidden" name="linked_request_id" value="{{ prefill_request_id }}">
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <textarea class="form-control" name="message" rows="2" 
+                                      placeholder="Type your message..." required style="resize: none;">{{ prefill_message }}</textarea>
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled title="File attachments coming soon">
+                                <i class="bi bi-paperclip"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-3">
+                {% if current_user.user_type == 'volunteer' %}
+                    <a href="{{ url_for('volunteer_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to My Space
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to My Space
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of chat
+document.addEventListener('DOMContentLoaded', function() {
+    const chatArea = document.getElementById('chatArea');
+    chatArea.scrollTop = chatArea.scrollHeight;
+});
+</script>
+{% endblock %}

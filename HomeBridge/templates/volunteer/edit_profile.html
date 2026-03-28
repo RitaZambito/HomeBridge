@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-pencil-square"></i> Edit My Profile</h2>
+            <p class="text-muted">Update your information, services and availability</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('volunteer_edit_profile') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row">
+            <!-- Personal Info -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                        <h5 class="mb-0"><i class="bi bi-person-fill"></i> Personal Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" value="{{ volunteer.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" value="{{ volunteer.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" name="phone" value="{{ volunteer.phone }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control" name="address" value="{{ volunteer.address }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Postcode</label>
+                            <input type="text" class="form-control" name="postcode" value="{{ volunteer.postcode }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bio -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header text-white" style="background: linear-gradient(135deg, #5A8BDA, #4ECDC4); border-radius: 8px 8px 0 0;">
+                        <h5 class="mb-0"><i class="bi bi-quote"></i> About Me</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Bio</label>
+                            <textarea class="form-control" name="bio" rows="4" maxlength="200" placeholder="Tell service users about yourself...">{{ volunteer.bio or '' }}</textarea>
+                            <small class="text-muted">Max 200 characters</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services -->
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header text-white" style="background: linear-gradient(135deg, #1E1B3A, #7C5CBF); border-radius: 8px 8px 0 0;">
+                        <h5 class="mb-0"><i class="bi bi-tools"></i> Services I Offer</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            {% set current_skills = volunteer.skills.split(',') if volunteer.skills else [] %}
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="skills" value="General cleaning" id="skill_general" {% if 'General cleaning' in current_skills %}checked{% endif %}>
+                                    <label class="form-check-label" for="skill_general">General Cleaning</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="skills" value="Laundry assistance" id="skill_laundry" {% if 'Laundry assistance' in current_skills %}checked{% endif %}>
+                                    <label class="form-check-label" for="skill_laundry">Laundry Assistance</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="skills" value="Garden tidying" id="skill_garden" {% if 'Garden tidying' in current_skills %}checked{% endif %}>
+                                    <label class="form-check-label" for="skill_garden">Garden Tidying</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="skills" value="Decluttering & Hoarding support" id="skill_declutter" {% if 'Decluttering & Hoarding support' in current_skills %}checked{% endif %}>
+                                    <label class="form-check-label" for="skill_declutter">Decluttering &amp; Hoarding Support</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Grid -->
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header text-white" style="background: linear-gradient(135deg, #F0AD4E, #E88B6A); border-radius: 8px 8px 0 0;">
+                        <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Weekly Availability</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>🌅 Morning<br><small>09:00-12:00</small></th>
+                                        <th>🌞 Afternoon<br><small>12:00-15:00</small></th>
+                                        <th>🌆 Late Afternoon<br><small>15:00-18:00</small></th>
+                                        <th>✨ Flexible<br><small>Any time</small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold">Monday</td>
+                                        <td><input type="radio" name="monday_slot" value="Morning" class="form-check-input" {% if volunteer.monday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="monday_slot" value="Afternoon" class="form-check-input" {% if volunteer.monday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="monday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.monday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="monday_slot" value="Flexible" class="form-check-input" {% if volunteer.monday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Tuesday</td>
+                                        <td><input type="radio" name="tuesday_slot" value="Morning" class="form-check-input" {% if volunteer.tuesday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="tuesday_slot" value="Afternoon" class="form-check-input" {% if volunteer.tuesday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="tuesday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.tuesday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="tuesday_slot" value="Flexible" class="form-check-input" {% if volunteer.tuesday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Wednesday</td>
+                                        <td><input type="radio" name="wednesday_slot" value="Morning" class="form-check-input" {% if volunteer.wednesday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="wednesday_slot" value="Afternoon" class="form-check-input" {% if volunteer.wednesday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="wednesday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.wednesday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="wednesday_slot" value="Flexible" class="form-check-input" {% if volunteer.wednesday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Thursday</td>
+                                        <td><input type="radio" name="thursday_slot" value="Morning" class="form-check-input" {% if volunteer.thursday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="thursday_slot" value="Afternoon" class="form-check-input" {% if volunteer.thursday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="thursday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.thursday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="thursday_slot" value="Flexible" class="form-check-input" {% if volunteer.thursday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Friday</td>
+                                        <td><input type="radio" name="friday_slot" value="Morning" class="form-check-input" {% if volunteer.friday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="friday_slot" value="Afternoon" class="form-check-input" {% if volunteer.friday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="friday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.friday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="friday_slot" value="Flexible" class="form-check-input" {% if volunteer.friday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <td class="fw-bold">Saturday</td>
+                                        <td><input type="radio" name="saturday_slot" value="Morning" class="form-check-input" {% if volunteer.saturday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="saturday_slot" value="Afternoon" class="form-check-input" {% if volunteer.saturday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="saturday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.saturday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="saturday_slot" value="Flexible" class="form-check-input" {% if volunteer.saturday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                    <tr class="table-info">
+                                        <td class="fw-bold">Sunday</td>
+                                        <td><input type="radio" name="sunday_slot" value="Morning" class="form-check-input" {% if volunteer.sunday_slot == 'Morning' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="sunday_slot" value="Afternoon" class="form-check-input" {% if volunteer.sunday_slot == 'Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="sunday_slot" value="Late Afternoon" class="form-check-input" {% if volunteer.sunday_slot == 'Late Afternoon' %}checked{% endif %}></td>
+                                        <td><input type="radio" name="sunday_slot" value="Flexible" class="form-check-input" {% if volunteer.sunday_slot == 'Flexible' %}checked{% endif %}></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="row">
+            <div class="col-12">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-check-circle"></i> Save Changes
+                </button>
+                <a href="{{ url_for('volunteer_profile') }}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Create Request - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #7C5CBF, #5A8BDA); border-radius: 8px 8px 0 0;">
+                <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Create New Support Request</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('create_request') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <!-- Support Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Type of Support Needed</label>
+                        <select class="form-select" name="support_type" required>
+                            <option value="">-- Select --</option>
+                            <option value="General cleaning" {% if prefill.support_type == 'General cleaning' %}selected{% endif %}>General Cleaning</option>
+                            <option value="Laundry assistance" {% if prefill.support_type == 'Laundry assistance' %}selected{% endif %}>Laundry Assistance</option>
+                            <option value="Garden tidying" {% if prefill.support_type == 'Garden tidying' %}selected{% endif %}>Garden Tidying</option>
+                            <option value="Decluttering & Hoarding support" {% if prefill.support_type == 'Decluttering & Hoarding support' %}selected{% endif %}>Decluttering &amp; Hoarding Support</option>
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" required
+                                  placeholder="Please describe what help you need in detail...">{{ prefill.description or '' }}</textarea>
+                    </div>
+
+                    <!-- Date and Time Slot -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preferred Date</label>
+                            <input type="date" class="form-control" name="preferred_date" id="preferred_date" required
+                                   value="{{ prefill.preferred_date or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Time Slot</label>
+                            <select class="form-select" name="time_slot" required>
+                                <option value="">-- Select time --</option>
+                                <option value="09:00-12:00" {% if prefill.time_slot == '09:00-12:00' %}selected{% endif %}>Morning (09:00 - 12:00)</option>
+                                <option value="12:00-15:00" {% if prefill.time_slot == '12:00-15:00' %}selected{% endif %}>Afternoon (12:00 - 15:00)</option>
+                                <option value="15:00-18:00" {% if prefill.time_slot == '15:00-18:00' %}selected{% endif %}>Late Afternoon (15:00 - 18:00)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Urgency (auto-calculated, shown as info) -->
+                    <div class="mb-3">
+                        <label class="form-label">Urgency</label>
+                        <div id="urgency-display" class="alert alert-secondary py-2">
+                            <i class="bi bi-info-circle"></i> Select a date to see urgency level
+                        </div>
+                        <input type="hidden" name="urgency" id="urgency" value="Medium">
+                        <small class="text-muted">Automatically set based on your selected date</small>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Find Volunteers & Create Request
+                        </button>
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Info Box -->
+        <div class="card mt-3 border-info">
+            <div class="card-body">
+                <h6><i class="bi bi-info-circle text-info"></i> What happens next?</h6>
+                <ol class="mb-0 small text-muted">
+                    <li>After you submit, we'll show you the best matching volunteers</li>
+                    <li>You select your preferred volunteer</li>
+                    <li>The volunteer accepts your request</li>
+                    <li>They'll arrive at your chosen date and time!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('preferred_date');
+    const urgencyInput = document.getElementById('urgency');
+    const urgencyDisplay = document.getElementById('urgency-display');
+    
+    // Set minimum date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+    
+    // Calculate urgency when date changes
+    function calculateUrgency() {
+        const selectedDate = new Date(dateInput.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const diffTime = selectedDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays <= 7) {
+            urgencyInput.value = 'High';
+            urgencyDisplay.className = 'alert alert-danger py-2';
+            urgencyDisplay.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> <strong>High</strong> - Less than 7 days away';
+        } else if (diffDays <= 13) {
+            urgencyInput.value = 'Medium';
+            urgencyDisplay.className = 'alert alert-warning py-2';
+            urgencyDisplay.innerHTML = '<i class="bi bi-exclamation-circle-fill"></i> <strong>Medium</strong> - 7 to 13 days away';
+        } else {
+            urgencyInput.value = 'Low';
+            urgencyDisplay.className = 'alert alert-success py-2';
+            urgencyDisplay.innerHTML = '<i class="bi bi-check-circle-fill"></i> <strong>Low</strong> - More than 13 days away';
+        }
+    }
+
+    dateInput.addEventListener('change', calculateUrgency);
+
+    // If date is pre-filled (e.g. from Edit Search), calculate immediately
+    if (dateInput.value) {
+        calculateUrgency();
+    }
+});
+</script>
+{% endblock %}

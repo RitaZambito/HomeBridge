@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Register - HomeBridge{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #2ABFAB, #5A8BDA); border-radius: 8px 8px 0 0;">
+                <h4 class="mb-0"><i class="bi bi-person-plus-fill"></i> Register</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">I want to register as:</label>
+                        <select class="form-select" name="user_type" id="userType" required onchange="toggleFields()">
+                            <option value="user">Service User (I need help)</option>
+                            <option value="volunteer">Volunteer (I want to help)</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" id="password" required minlength="8"
+                                   onkeyup="checkPassword()">
+                            <div id="password-requirements" class="mt-2 small">
+                                <div id="req-length" class="text-danger"><i class="bi bi-x-circle"></i> At least 8 characters</div>
+                                <div id="req-upper" class="text-danger"><i class="bi bi-x-circle"></i> One uppercase letter</div>
+                                <div id="req-lower" class="text-danger"><i class="bi bi-x-circle"></i> One lowercase letter</div>
+                                <div id="req-number" class="text-danger"><i class="bi bi-x-circle"></i> One number</div>
+                                <div id="req-special" class="text-danger"><i class="bi bi-x-circle"></i> One special character (!@#$%^&* etc.)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" name="address" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Postcode</label>
+                        <input type="text" class="form-control" name="postcode" required placeholder="e.g., B15 2TT">
+                    </div>
+
+                    <!-- Fields for Service Users -->
+                    <div id="userFields">
+                        <div class="mb-3">
+                            <label class="form-label">Support Needs <small class="text-muted">(optional - tick all that apply)</small></label>
+                            <div class="border rounded p-3">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Physical disability" id="sn1">
+                                    <label class="form-check-label" for="sn1">Physical disability</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Limited mobility" id="sn2">
+                                    <label class="form-check-label" for="sn2">Limited mobility</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Visual impairment" id="sn3">
+                                    <label class="form-check-label" for="sn3">Visual impairment</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Mental health condition" id="sn4">
+                                    <label class="form-check-label" for="sn4">Mental health condition</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Hoarding disorder" id="sn5">
+                                    <label class="form-check-label" for="sn5">Hoarding disorder</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Learning disability" id="sn6">
+                                    <label class="form-check-label" for="sn6">Learning disability</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Dementia / cognitive decline" id="sn7">
+                                    <label class="form-check-label" for="sn7">Dementia / cognitive decline</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Chronic illness / chronic pain" id="sn8">
+                                    <label class="form-check-label" for="sn8">Chronic illness / chronic pain</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Elderly, living alone" id="sn9">
+                                    <label class="form-check-label" for="sn9">Elderly, living alone</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Carer / caregiver burden" id="sn10">
+                                    <label class="form-check-label" for="sn10">Carer / caregiver burden</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Recovering from surgery or illness" id="sn11">
+                                    <label class="form-check-label" for="sn11">Recovering from surgery or illness</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Bereavement" id="sn12">
+                                    <label class="form-check-label" for="sn12">Bereavement</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Financial hardship / low income" id="sn13">
+                                    <label class="form-check-label" for="sn13">Financial hardship / low income</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="conditions" value="Other" id="sn14">
+                                    <label class="form-check-label" for="sn14">Other</label>
+                                </div>
+                            </div>
+                            <small class="text-muted"><i class="bi bi-shield-lock"></i> This information is only visible to administrators and helps us provide better support.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Emergency Contact</label>
+                            <input type="tel" class="form-control" name="emergency_contact" placeholder="Emergency contact phone number">
+                        </div>
+                    </div>
+
+                    <!-- Fields for Volunteers -->
+                    <div id="volunteerFields" style="display: none;">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-tools"></i> Services I Can Offer</label>
+                            <p class="text-muted small">Select all that apply</p>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="skills" value="General cleaning" id="skill_general">
+                                        <label class="form-check-label" for="skill_general">General Cleaning</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="skills" value="Laundry assistance" id="skill_laundry">
+                                        <label class="form-check-label" for="skill_laundry">Laundry Assistance</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="skills" value="Garden tidying" id="skill_garden">
+                                        <label class="form-check-label" for="skill_garden">Garden Tidying</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="skills" value="Decluttering & Hoarding support" id="skill_declutter">
+                                        <label class="form-check-label" for="skill_declutter">Decluttering &amp; Hoarding Support</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AVAILABILITY GRID -->
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-calendar-week"></i> Weekly Availability</label>
+                            <p class="text-muted small">Select your available time slot for each day</p>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Day</th>
+                                            <th>🌅 Morning<br><small>09:00-12:00</small></th>
+                                            <th>🌞 Afternoon<br><small>12:00-15:00</small></th>
+                                            <th>🌆 Late Afternoon<br><small>15:00-18:00</small></th>
+                                            <th>✨ Flexible<br><small>Any time</small></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-bold">Monday</td>
+                                            <td><input type="radio" name="monday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="monday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="monday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="monday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Tuesday</td>
+                                            <td><input type="radio" name="tuesday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="tuesday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="tuesday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="tuesday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Wednesday</td>
+                                            <td><input type="radio" name="wednesday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="wednesday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="wednesday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="wednesday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Thursday</td>
+                                            <td><input type="radio" name="thursday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="thursday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="thursday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="thursday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Friday</td>
+                                            <td><input type="radio" name="friday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="friday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="friday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="friday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                        <tr class="table-info">
+                                            <td class="fw-bold">Saturday</td>
+                                            <td><input type="radio" name="saturday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="saturday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="saturday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="saturday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                        <tr class="table-info">
+                                            <td class="fw-bold">Sunday</td>
+                                            <td><input type="radio" name="sunday_slot" value="Morning" class="form-check-input"></td>
+                                            <td><input type="radio" name="sunday_slot" value="Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="sunday_slot" value="Late Afternoon" class="form-check-input"></td>
+                                            <td><input type="radio" name="sunday_slot" value="Flexible" class="form-check-input"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-person-badge"></i> About Me</label>
+                            <textarea class="form-control" name="bio" rows="2" maxlength="200" placeholder="Tell us a bit about yourself... (max 200 characters)"></textarea>
+                            <small class="text-muted">This will be visible to service users when they select a volunteer</small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-person-plus-fill"></i> Register
+                    </button>
+                </form>
+
+                <hr>
+                <p class="text-center mb-0">
+                    Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFields() {
+    const userType = document.getElementById('userType').value;
+    const userFields = document.getElementById('userFields');
+    const volunteerFields = document.getElementById('volunteerFields');
+
+    if (userType === 'volunteer') {
+        userFields.style.display = 'none';
+        volunteerFields.style.display = 'block';
+    } else {
+        userFields.style.display = 'block';
+        volunteerFields.style.display = 'none';
+    }
+}
+
+function checkPassword() {
+    const pw = document.getElementById('password').value;
+    
+    function setReq(id, valid) {
+        const el = document.getElementById(id);
+        if (valid) {
+            el.className = 'text-success';
+            el.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + el.textContent.trim();
+        } else {
+            el.className = 'text-danger';
+            el.innerHTML = '<i class="bi bi-x-circle"></i> ' + el.textContent.trim();
+        }
+    }
+    
+    setReq('req-length', pw.length >= 8);
+    setReq('req-upper', /[A-Z]/.test(pw));
+    setReq('req-lower', /[a-z]/.test(pw));
+    setReq('req-number', /[0-9]/.test(pw));
+    setReq('req-special', /[!@#$%^&*(),.?":{}|<>]/.test(pw));
+}
+</script>
+{% endblock %}

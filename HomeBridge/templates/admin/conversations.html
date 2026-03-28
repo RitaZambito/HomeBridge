@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Conversations - HomeBridge Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="bi bi-chat-dots-fill"></i> Conversations</h2>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if conversations %}
+        <div class="text-end mb-3">
+            <form method="POST" action="{{ url_for('admin_clear_all_conversations') }}" class="d-inline"
+                  onsubmit="return confirm('Delete ALL conversations? This cannot be undone.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i> Clear All
+                </button>
+            </form>
+        </div>
+        {% for conv in conversations %}
+            <div class="card mb-3 {% if conv.unread > 0 %}border-primary border-2{% else %}border-secondary{% endif %}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if conv.unread > 0 %}
+                                    <span class="badge bg-primary me-2"><i class="bi bi-envelope-fill"></i> {{ conv.unread }} NEW</span>
+                                {% endif %}
+                                {% if conv.participant_type == 'user' %}
+                                    <span class="badge bg-info me-2"><i class="bi bi-person"></i> Service User</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark me-2"><i class="bi bi-heart"></i> Volunteer</span>
+                                {% endif %}
+                            </div>
+                            
+                            <h5 class="card-title mb-1">
+                                <i class="bi bi-person-circle"></i> {{ conv.participant_name }}
+                            </h5>
+                            <p class="card-text text-muted mb-1">
+                                {% if conv.last_sender == 'admin' %}<strong>You:</strong> {% endif %}{{ conv.last_message }}
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> {{ conv.last_date.strftime('%d %b %Y, %H:%M') }}
+                                &bull; {{ conv.msg_count }} message{{ 's' if conv.msg_count != 1 else '' }}
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ url_for('admin_chat', participant_type=conv.participant_type, participant_id=conv.participant_id) }}" 
+                               class="btn {% if conv.unread > 0 %}btn-primary{% else %}btn-outline-primary{% endif %} mb-1">
+                                <i class="bi bi-chat-dots"></i> Open Chat
+                            </a>
+                            <form method="POST" action="{{ url_for('admin_delete_conversation', participant_type=conv.participant_type, participant_id=conv.participant_id) }}" class="d-inline"
+                                  onsubmit="return confirm('Delete this conversation?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-chat-dots text-muted" style="font-size: 4rem;"></i>
+                <h5 class="text-muted mt-3">No conversations yet</h5>
+                <p class="text-muted">When users or volunteers message you, their conversations will appear here.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
